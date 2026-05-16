@@ -1,6 +1,8 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using RabbitMQ.Client;
 
-app.MapGet("/", () => "Hello World!");
+var factory = new ConnectionFactory { HostName = "localhost" };
+using var connection = await factory.CreateConnectionAsync();
 
-app.Run();
+using var channel = await connection.CreateChannelAsync();
+
+await channel.QueueDeclareAsync(queue: "message", durable: true, exclusive: false, autoDelete: false, null);
