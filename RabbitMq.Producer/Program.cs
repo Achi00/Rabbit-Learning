@@ -24,12 +24,3 @@ for (int i = 0; i < 10; i++)
 
     await Task.Delay(2000);
 }
-
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-app.MapGet("/", () => "Hello World!");
-
-app.Run();
-
-
