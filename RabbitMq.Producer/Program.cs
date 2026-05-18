@@ -1,4 +1,5 @@
 using RabbitMQ.Client;
+using System.Text;
 
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
@@ -16,3 +17,19 @@ await channel.QueueDeclareAsync(queue: "push-queue", durable: true, exclusive: f
 await channel.QueueBindAsync(queue: "email-queue", exchange: "app-exchange", routingKey: "email");
 await channel.QueueBindAsync(queue: "sms-queue", exchange: "app-exchange", routingKey: "sms");
 await channel.QueueBindAsync(queue: "push-queue", exchange: "app-exchange", routingKey: "push");
+
+string[] routingKeys =
+{
+    "email",
+    "sms",
+    "push"
+};
+
+foreach (var item in routingKeys)
+{
+    var body = Encoding.UTF8.GetBytes("Hello");
+
+    // publisher
+    await channel.BasicPublishAsync(exchange: "app-exchange", routingKey: item, body: body);
+}
+

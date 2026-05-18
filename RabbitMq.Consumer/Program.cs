@@ -7,7 +7,7 @@ using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync(queue: "message", durable: true, exclusive: false, autoDelete: false, null);
+await channel.QueueDeclareAsync(queue: "email-queue", durable: true, exclusive: false, autoDelete: false, null);
 
 Console.WriteLine("Waiting messages");
 
@@ -24,6 +24,6 @@ consumer.ReceivedAsync += async (sender, eventArgs) =>
 };
 
 // manual ackgnowladge messages
-await channel.BasicConsumeAsync("message", autoAck: false, consumer);
+await channel.BasicConsumeAsync("email-queue", autoAck: false, consumer);
 
 Console.ReadLine();
