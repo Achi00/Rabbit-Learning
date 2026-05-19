@@ -1,4 +1,4 @@
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 
@@ -14,8 +14,8 @@ await channel.QueueDeclareAsync(queue: "push-queue", durable: true, exclusive: f
 Console.WriteLine("Waiting messages");
 
 var consumer = new AsyncEventingBasicConsumer(channel);
-consumer.ReceivedAsync += async (sender, eventArgs) => 
-{ 
+consumer.ReceivedAsync += async (sender, eventArgs) =>
+{
     var body = eventArgs.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
 

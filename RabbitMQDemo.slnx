@@ -1,4 +1,10 @@
 <Solution>
-  <Project Path="RabbitMq.Consumer/RabbitMq.Consumer.csproj" />
-  <Project Path="RabbitMq.Producer/RabbitMq.Producer.csproj" />
+  <Folder Name="/Console/">
+    <Project Path="Rabbit-Mq.Consumer/Rabbit-Mq.Consumer.csproj" Id="ae277517-6d62-4866-92fe-1cf1a0b6c2d3" />
+    <Project Path="Rabbit-Mq.Producer/Rabbit-Mq.Producer.csproj" Id="8e679224-3645-4441-b1ff-d698cc8bfb00" />
+  </Folder>
+  <Folder Name="/Server/">
+    <Project Path="RabbitMq.Consumer/RabbitMq.Consumer.csproj" />
+    <Project Path="RabbitMq.Producer/RabbitMq.Producer.csproj" />
+  </Folder>
 </Solution>
