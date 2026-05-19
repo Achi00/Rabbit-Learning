@@ -27,7 +27,7 @@ string[] routingKeys =
 
 foreach (var item in routingKeys)
 {
-    var body = Encoding.UTF8.GetBytes("Hello");
+    var body = Encoding.UTF8.GetBytes($"Hello {item}");
 
     // publisher
     await channel.BasicPublishAsync(exchange: "app-exchange", routingKey: item, body: body);
