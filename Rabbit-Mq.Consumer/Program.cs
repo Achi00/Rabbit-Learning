@@ -26,8 +26,8 @@ consumer.ReceivedAsync += async (sender, eventArgs) =>
 };
 
 // manual ackgnowladge messages
-//await channel.BasicConsumeAsync("email-queue", autoAck: false, consumer);
+await channel.BasicConsumeAsync("email-queue", autoAck: false, consumer);
 await channel.BasicConsumeAsync("sms-queue", autoAck: false, consumer);
-//await channel.BasicConsumeAsync("push-queue", autoAck: false, consumer);
+await channel.BasicConsumeAsync("push-queue", autoAck: false, consumer);
 
 Console.ReadLine();
