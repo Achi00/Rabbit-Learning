@@ -35,11 +35,14 @@ string[] routingKeys =
 
 foreach (var item in routingKeys)
 {
-    if (item == "notify")
-    {
+    //if (item == "notify")
+    //{
         var body = Encoding.UTF8.GetBytes($"Hello {item}");
 
         // publisher
         await channel.BasicPublishAsync(exchange: "app-exchange", routingKey: item, body: body);
-    }
+    //}
 }
+
+
+Console.ReadLine();
