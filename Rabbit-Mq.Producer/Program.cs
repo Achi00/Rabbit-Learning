@@ -26,9 +26,12 @@ for (int i = 1; i <= 20; i++)
 {
     var message = Encoding.UTF8.GetBytes($"Job #{i}");
 
-    Console.WriteLine($"message: #{i} was sent");
 
     await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
+    
+    Console.WriteLine($"sent: {i} - {Guid.NewGuid}");
+
+    await Task.Delay(2000);
 }
 
 
