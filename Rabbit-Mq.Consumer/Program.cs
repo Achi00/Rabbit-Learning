@@ -2,32 +2,32 @@
 using RabbitMQ.Client.Events;
 using System.Text;
 
+
+Console.WriteLine("Press to start");
+Console.ReadLine();
+
+await Task.Delay(5000);
+
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync(queue: "email-queue", durable: true, exclusive: false, autoDelete: false, null);
-await channel.QueueDeclareAsync(queue: "sms-queue", durable: true, exclusive: false, autoDelete: false, null);
-await channel.QueueDeclareAsync(queue: "push-queue", durable: true, exclusive: false, autoDelete: false, null);
+await channel.ExchangeDeclareAsync("work-exchange", ExchangeType.Direct, true, false, null);
 
-Console.WriteLine("Waiting messages");
+await channel.QueueDeclareAsync(queue: "work-queue", durable: true, exclusive: false, autoDelete: false, null);
 
 var consumer = new AsyncEventingBasicConsumer(channel);
-consumer.ReceivedAsync += async (sender, eventArgs) =>
+
+consumer.ReceivedAsync += async (model, ea) =>
 {
-    var body = eventArgs.Body.ToArray();
+    var body = ea.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
+    Console.WriteLine($"Received message {message}");
 
-    Console.WriteLine($"Received: {message}");
-
-    // ACK
-    await channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false);
+    await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
 };
 
-// manual ackgnowladge messages
-await channel.BasicConsumeAsync("email-queue", autoAck: false, consumer);
-await channel.BasicConsumeAsync("sms-queue", autoAck: false, consumer);
-await channel.BasicConsumeAsync("push-queue", autoAck: false, consumer);
+await channel.BasicConsumeAsync(queue: "work-queue", autoAck: false, consumer: consumer);
 
 Console.ReadLine();
