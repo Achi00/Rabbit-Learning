@@ -9,7 +9,6 @@ using var channel = await connection.CreateChannelAsync();
 var workQueueArgs = new Dictionary<string, object>
 {
     { "x-dead-letter-exchange", "dead-letter-exchange" },
-    { "x-dead-letter-routing-key", "dead-letter-key" }
 };
 
 
@@ -21,7 +20,7 @@ await channel.ExchangeDeclareAsync(
 
 await channel.ExchangeDeclareAsync(
     exchange: "dead-letter-exchange",
-    type: ExchangeType.Direct,
+    type: ExchangeType.Fanout,
     durable: true);
 
 
@@ -44,7 +43,7 @@ await channel.QueueDeclareAsync(
 await channel.QueueBindAsync(
     queue: "work-queue",
     exchange: "work-exchange",
-    routingKey: "work");
+    routingKey: string.Empty);
 // dlx
 
 await channel.QueueBindAsync(
