@@ -8,7 +8,7 @@ using var channel = await connection.CreateChannelAsync();
 
 var workQueueArgs = new Dictionary<string, object>
 {
-    { "x-dead-letter-exchange", "dead-letter-exchange" },
+    { "x-dead-letter-exchange", "dead-letter-exchange" }
 };
 
 
