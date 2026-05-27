@@ -21,7 +21,7 @@ await channel.ExchangeDeclareAsync(
     null);
 
 await channel.QueueDeclareAsync(
-    queue: "work-queue",
+    queue: "work-queue-v2",
     durable: true,
     exclusive: false,
     autoDelete: false,
@@ -40,6 +40,29 @@ consumer.ReceivedAsync += async (model, ea) =>
     }
     catch
     {
+        int retryCount = 0;
+
+        if (ea.BasicProperties.Headers?.ContainsKey("x-death") == true)
+        {
+            var deaths = (List<object>)ea.BasicProperties.Headers["x-death"];
+
+            var death = (Dictionary<string, object>)deaths[0];
+
+            retryCount = Convert.ToInt32(death["count"]);
+        }
+
+        Console.WriteLine($"Retry count: {retryCount}");
+
+        if (retryCount >= 3)
+        {
+            Console.WriteLine("sending to final DLQ");
+
+            await channel.BasicPublishAsync("dead-letter-exchange", "", ea.Body);
+
+            await channel.BasicAckAsync(ea.DeliveryTag, false);
+
+            return;
+        }
         await channel.BasicNackAsync(ea.DeliveryTag, false, false);
         Console.WriteLine($"Catching NACK {ea.DeliveryTag}");
     }
