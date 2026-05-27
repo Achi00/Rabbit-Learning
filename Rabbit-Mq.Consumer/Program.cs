@@ -10,7 +10,8 @@ using var channel = await connection.CreateChannelAsync();
 
 var workQueueArgs = new Dictionary<string, object>
 {
-    { "x-dead-letter-exchange", "dead-letter-exchange" }
+    //{ "x-dead-letter-exchange", "dead-letter-exchange" }
+    { "x-dead-letter-exchange", "retry-exchange" }
 };
 
 await channel.ExchangeDeclareAsync(
@@ -26,6 +27,7 @@ await channel.QueueDeclareAsync(
     exclusive: false,
     autoDelete: false,
     arguments: workQueueArgs);
+
 
 Console.WriteLine("Waiting for messages");
 
@@ -80,7 +82,7 @@ await channel.BasicQosAsync(
     global: false);
 
 await channel.BasicConsumeAsync(
-    queue: "work-queue", 
+    queue: "work-queue-v2", 
     autoAck: false,
     consumer: consumer);
 
