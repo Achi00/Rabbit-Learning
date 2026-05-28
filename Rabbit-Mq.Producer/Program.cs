@@ -10,14 +10,6 @@ var arguments = new Dictionary<string, object>
 {
     { "x-dead-letter-exchange", "orders.dlx" },
     { "x-message-ttl", 30000 }
-    //{ "x-dead-letter-exchange", "dead-letter-exchange" }
-};
-
-var retryQueueArgs = new Dictionary<string, object>
-{
-    { "x-message-ttl", 10000 },
-    { "x-dead-letter-exchange", "work-exchange" },
-    { "x-dead-letter-routing-key", "work" }
 };
 
 try
@@ -46,8 +38,31 @@ await channel.QueueDeclareAsync(
 
 // Declare the DL exchange and bind the DLQ to it
 await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
+await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
+
 await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
+
+await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
+
+await channel.QueueBindAsync(queue: "orders.queue", exchange: "orders.exchange", routingKey: "orders");
 await channel.QueueBindAsync(queue: "orders.dlq", exchange: "orders.dlx", routingKey: string.Empty);
+
+
+
+for (int i = 1; i <= 1; i++)
+{
+    var message = Encoding.UTF8.GetBytes($"Job #{i}");
+
+
+    await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
+
+    Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
+
+    await Task.Delay(2000);
+}
+
+
+Console.ReadLine();
 
 //// queues
 //await channel.QueueDeclareAsync(
@@ -87,19 +102,3 @@ await channel.QueueBindAsync(queue: "orders.dlq", exchange: "orders.dlx", routin
 //    queue: "dead-letter-queue",
 //    exchange: "dead-letter-exchange",
 //    routingKey: string.Empty);
-
-
-//for (int i = 1; i <= 1; i++)
-//{
-//    var message = Encoding.UTF8.GetBytes($"Job #{i}");
-
-
-//    await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
-
-//    Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
-
-//    await Task.Delay(2000);
-//}
-
-
-Console.ReadLine();
