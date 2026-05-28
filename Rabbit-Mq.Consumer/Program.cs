@@ -7,99 +7,20 @@ using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-
-var workQueueArgs = new Dictionary<string, object>
-{
-    //{ "x-dead-letter-exchange", "dead-letter-exchange" }
-    { "x-dead-letter-exchange", "retry-exchange" }
-};
-
-try
-{
-    await channel.QueueDeleteAsync("work-queue-v2");
-    await channel.QueueDeleteAsync("retry-queue");
-    await channel.QueueDeleteAsync("dead-letter-queue");
-
-    await channel.ExchangeDeleteAsync("work-exchange");
-    await channel.ExchangeDeleteAsync("retry-exchange");
-    await channel.ExchangeDeleteAsync("dead-letter-exchange");
-
-    Console.WriteLine("Cleaning...");
-}
-catch
-{
-}
-
-await channel.ExchangeDeclareAsync(
-    "work-exchange", 
-    ExchangeType.Direct,
-    true, 
-    false, 
-    null);
-
-await channel.QueueDeclareAsync(
-    queue: "work-queue-v2",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: workQueueArgs);
-
-
-Console.WriteLine("Waiting for messages");
+await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 
 consumer.ReceivedAsync += async (model, ea) =>
 {
-    try
-    {
-        Console.WriteLine("MESSAGE RECEIVED");
-        throw new Exception("TESTING DLQ");
-    }
-    catch
-    {
-        int retryCount = 0;
+    var body = ea.Body.ToArray();
+    var message = Encoding.UTF8.GetString(body);
 
-        if (ea.BasicProperties.Headers?.ContainsKey("x-death") == true)
-        {
-            var deaths = (List<object>)ea.BasicProperties.Headers["x-death"];
+    Console.WriteLine($"Received {message}");
 
-            var death = (Dictionary<string, object>)deaths[0];
-
-            retryCount = Convert.ToInt32(death["count"]);
-        }
-
-        Console.WriteLine($"Retry count: {retryCount}");
-
-        if (retryCount >= 3)
-        {
-            Console.WriteLine("sending to final DLQ");
-
-            await channel.BasicPublishAsync("dead-letter-exchange", "", ea.Body);
-
-            await channel.BasicAckAsync(ea.DeliveryTag, false);
-
-            return;
-        }
-        await channel.BasicNackAsync(ea.DeliveryTag, false, false);
-        Console.WriteLine($"Catching NACK {ea.DeliveryTag}");
-    }
-    //await Task.Delay(Random.Shared.Next(2000, 10000));
-    //var body = ea.Body.ToArray();
-    //var message = Encoding.UTF8.GetString(body);
-    //Console.WriteLine($"Received message {message}");
-
-    //await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
+    await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
 };
 
-await channel.BasicQosAsync(
-    prefetchSize: 0,
-    prefetchCount: 1,
-    global: false);
-
-await channel.BasicConsumeAsync(
-    queue: "work-queue-v2", 
-    autoAck: false,
-    consumer: consumer);
+await channel.BasicConsumeAsync(queue: "orders.queue", autoAck: false, consumer);
 
 Console.ReadLine();

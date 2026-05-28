@@ -40,9 +40,9 @@ await channel.QueueDeclareAsync(
 await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
 await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
 
+await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
 await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
 
-await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
 
 await channel.QueueBindAsync(queue: "orders.queue", exchange: "orders.exchange", routingKey: "orders");
 await channel.QueueBindAsync(queue: "orders.dlq", exchange: "orders.dlx", routingKey: string.Empty);
@@ -54,7 +54,7 @@ for (int i = 1; i <= 1; i++)
     var message = Encoding.UTF8.GetBytes($"Job #{i}");
 
 
-    await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
+    await channel.BasicPublishAsync(exchange: "orders.exchange", routingKey: "orders", body: message);
 
     Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
 
