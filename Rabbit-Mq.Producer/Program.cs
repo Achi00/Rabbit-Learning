@@ -6,9 +6,10 @@ using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-var workQueueArgs = new Dictionary<string, object>
+var arguments = new Dictionary<string, object>
 {
-    { "x-dead-letter-exchange", "retry-exchange" }
+    { "x-dead-letter-exchange", "orders.dlx" },
+    { "x-message-ttl", 30000 }
     //{ "x-dead-letter-exchange", "dead-letter-exchange" }
 };
 
@@ -19,75 +20,86 @@ var retryQueueArgs = new Dictionary<string, object>
     { "x-dead-letter-routing-key", "work" }
 };
 
-
-// create exchange
-await channel.ExchangeDeclareAsync(
-    exchange: "work-exchange",
-    type: ExchangeType.Direct,
-    durable: true);
-
-await channel.ExchangeDeclareAsync(
-    "retry-exchange",
-    ExchangeType.Direct,
-    durable: true);
-
-await channel.ExchangeDeclareAsync(
-    exchange: "dead-letter-exchange",
-    type: ExchangeType.Fanout,
-    durable: true);
-
-
-// queues
-await channel.QueueDeclareAsync(
-    queue: "work-queue-v2",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: workQueueArgs);
-// dlx queue
-await channel.QueueDeclareAsync(
-    queue: "dead-letter-queue",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: null);
-// retry queue
-await channel.QueueDeclareAsync(
-    queue: "retry-queue",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: retryQueueArgs);
-
-// bindings
-await channel.QueueBindAsync(
-    queue: "work-queue-v2",
-    exchange: "work-exchange",
-    routingKey: "work");
-
-await channel.QueueBindAsync(
-    queue: "retry-queue",
-    exchange: "retry-exchange",
-    routingKey: string.Empty);
-// dlx
-
-await channel.QueueBindAsync(
-    queue: "dead-letter-queue",
-    exchange: "dead-letter-exchange",
-    routingKey: string.Empty);
-
-
-for (int i = 1; i <= 20; i++)
+try
 {
-    var message = Encoding.UTF8.GetBytes($"Job #{i}");
+    await channel.QueueDeleteAsync("work-queue-v2");
+    await channel.QueueDeleteAsync("retry-queue");
+    await channel.QueueDeleteAsync("dead-letter-queue");
 
+    await channel.ExchangeDeleteAsync("work-exchange");
+    await channel.ExchangeDeleteAsync("retry-exchange");
+    await channel.ExchangeDeleteAsync("dead-letter-exchange");
 
-    await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
-    
-    Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
-
-    await Task.Delay(2000);
+    Console.WriteLine("Cleaning...");
 }
+catch
+{
+}
+
+await channel.QueueDeclareAsync(
+    queue: "orders.queue",
+    durable: true,
+    exclusive: false,
+    autoDelete: false,
+    arguments: arguments
+);
+
+// Declare the DL exchange and bind the DLQ to it
+await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
+await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
+await channel.QueueBindAsync(queue: "orders.dlq", exchange: "orders.dlx", routingKey: string.Empty);
+
+//// queues
+//await channel.QueueDeclareAsync(
+//    queue: "work-queue-v2",
+//    durable: true,
+//    exclusive: false,
+//    autoDelete: false,
+//    arguments: workQueueArgs);
+//// dlx queue
+//await channel.QueueDeclareAsync(
+//    queue: "dead-letter-queue",
+//    durable: true,
+//    exclusive: false,
+//    autoDelete: false,
+//    arguments: null);
+//// retry queue
+//await channel.QueueDeclareAsync(
+//    queue: "retry-queue",
+//    durable: true,
+//    exclusive: false,
+//    autoDelete: false,
+//    arguments: retryQueueArgs);
+
+//// bindings
+//await channel.QueueBindAsync(
+//    queue: "work-queue-v2",
+//    exchange: "work-exchange",
+//    routingKey: "work");
+
+//await channel.QueueBindAsync(
+//    queue: "retry-queue",
+//    exchange: "retry-exchange",
+//    routingKey: string.Empty);
+//// dlx
+
+//await channel.QueueBindAsync(
+//    queue: "dead-letter-queue",
+//    exchange: "dead-letter-exchange",
+//    routingKey: string.Empty);
+
+
+//for (int i = 1; i <= 1; i++)
+//{
+//    var message = Encoding.UTF8.GetBytes($"Job #{i}");
+
+
+//    await channel.BasicPublishAsync(exchange: "work-exchange", routingKey: "work", body: message);
+
+//    Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
+
+//    await Task.Delay(2000);
+//}
 
 
 Console.ReadLine();

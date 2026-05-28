@@ -14,6 +14,22 @@ var workQueueArgs = new Dictionary<string, object>
     { "x-dead-letter-exchange", "retry-exchange" }
 };
 
+try
+{
+    await channel.QueueDeleteAsync("work-queue-v2");
+    await channel.QueueDeleteAsync("retry-queue");
+    await channel.QueueDeleteAsync("dead-letter-queue");
+
+    await channel.ExchangeDeleteAsync("work-exchange");
+    await channel.ExchangeDeleteAsync("retry-exchange");
+    await channel.ExchangeDeleteAsync("dead-letter-exchange");
+
+    Console.WriteLine("Cleaning...");
+}
+catch
+{
+}
+
 await channel.ExchangeDeclareAsync(
     "work-exchange", 
     ExchangeType.Direct,
