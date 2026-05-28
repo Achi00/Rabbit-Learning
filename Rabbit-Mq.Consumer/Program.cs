@@ -7,7 +7,14 @@ using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
+var arguments = new Dictionary<string, object>
+{
+    { "x-dead-letter-exchange", "orders.dlx" },
+    { "x-message-ttl", 30000 }
+};
+
+
+await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false, arguments);
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 

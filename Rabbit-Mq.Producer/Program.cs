@@ -14,19 +14,21 @@ var arguments = new Dictionary<string, object>
 
 try
 {
+    await channel.QueueDeleteAsync("orders.queue");
+    await channel.QueueDeleteAsync("orders.dlq");
     await channel.QueueDeleteAsync("work-queue-v2");
     await channel.QueueDeleteAsync("retry-queue");
     await channel.QueueDeleteAsync("dead-letter-queue");
 
+    await channel.ExchangeDeleteAsync("orders.exchange");
+    await channel.ExchangeDeleteAsync("orders.dlx");
     await channel.ExchangeDeleteAsync("work-exchange");
     await channel.ExchangeDeleteAsync("retry-exchange");
     await channel.ExchangeDeleteAsync("dead-letter-exchange");
 
     Console.WriteLine("Cleaning...");
 }
-catch
-{
-}
+catch { }
 
 await channel.QueueDeclareAsync(
     queue: "orders.queue",
@@ -36,12 +38,16 @@ await channel.QueueDeclareAsync(
     arguments: arguments
 );
 
+await channel.QueueDeclareAsync(
+    "orders.dlq", 
+    durable: true, 
+    exclusive: false, 
+    autoDelete: false
+);
 // Declare the DL exchange and bind the DLQ to it
 await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
 await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
 
-await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false);
-await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
 
 
 await channel.QueueBindAsync(queue: "orders.queue", exchange: "orders.exchange", routingKey: "orders");
