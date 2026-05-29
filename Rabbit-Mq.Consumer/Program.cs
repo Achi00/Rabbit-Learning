@@ -16,10 +16,19 @@ consumer.ReceivedAsync += async (model, ea) =>
 
     var retryCount = headers.TryGetValue("x-retry-count", out var val) ? Convert.ToInt32(val) : 0;
 
-    if (retryCount >= 3)
+    // set up in SetupTopologyAsync
+    var waitQueue = retryCount switch
     {
-        Console.WriteLine($"Giving up after {retryCount} retries");
-        // drop it after multiple fails
+        0 => "orders.retry.5s",
+        1 => "orders.retry.30s",
+        2 => "orders.retry.300s",
+        _ => null
+    };
+
+    if (waitQueue is null)
+    {
+        Console.WriteLine("Message failed permanently, dropping message");
+        // ack message, drop it
         await channel.BasicAckAsync(ea.DeliveryTag, false);
         return;
     }
