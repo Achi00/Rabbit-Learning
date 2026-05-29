@@ -35,7 +35,7 @@ consumer.ReceivedAsync += async (model, ea) =>
 
     Console.WriteLine($"Retrying (attempt {retryCount + 1})...");
 
-    // uodate headers
+    // update headers
     var props = new BasicProperties
     {
         Persistent = true,
@@ -47,8 +47,8 @@ consumer.ReceivedAsync += async (model, ea) =>
 
     // republish back to main exchange
     await channel.BasicPublishAsync(
-        exchange: "orders.exchange",
-        routingKey: "orders",
+        exchange: "",
+        routingKey: waitQueue,
         mandatory: false,
         basicProperties: props,
         body: ea.Body.ToArray()
