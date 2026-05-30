@@ -1,8 +1,8 @@
 ﻿using RabbitMQ.Client;
 
-namespace RabbitMQ.Application
+namespace RabbitMQ.Application.Infrastructure
 {
-    public static class Setup
+    public static class TopologySetup
     {
         public static async Task SetupTopologyAsync(IChannel channel)
         {

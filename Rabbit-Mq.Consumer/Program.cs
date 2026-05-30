@@ -1,4 +1,4 @@
-﻿using RabbitMQ.Application;
+﻿using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -6,7 +6,7 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-await Setup.SetupTopologyAsync(channel);
+await TopologySetup.SetupTopologyAsync(channel);
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 

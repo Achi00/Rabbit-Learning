@@ -1,4 +1,4 @@
-﻿using RabbitMQ.Application;
+﻿using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Client;
 using System.Text;
 
@@ -7,7 +7,7 @@ using var connection = await factory.CreateConnectionAsync();
 
 using var channel = await connection.CreateChannelAsync();
 
-await Setup.SetupTopologyAsync(channel);
+await TopologySetup.SetupTopologyAsync(channel);
 
 
 for (int i = 1; i <= 1; i++)
