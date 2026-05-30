@@ -29,7 +29,39 @@ consumer.ReceivedAsync += async (model, ea) =>
     {
         Console.WriteLine("Message failed permanently, dropping message");
         // ack message, drop it
-        await channel.BasicAckAsync(ea.DeliveryTag, false);
+        //await channel.BasicAckAsync(ea.DeliveryTag, false);
+        // instead of ack message we send it to poison queue in case of future diagnosis
+        // Grab the original death reason RabbitMQ stamps on every dead-lettered message
+        var xDeath = ea.BasicProperties.Headers?.TryGetValue("x-death", out var d) == true
+            ? d as List<object>
+            : null;
+
+        var firstDeath = xDeath?.FirstOrDefault() as Dictionary<string, object>;
+
+        var originalQueue = firstDeath?.TryGetValue("queue", out var q) == true ? q?.ToString() : "unknown";
+
+        var reason = firstDeath?.TryGetValue("reason", out var r) == true ? r?.ToString() : "unknown";
+
+        var retryProps = new BasicProperties
+        {
+            Persistent = true,
+            Headers = new Dictionary<string, object?>
+            {
+                { "x-retry-count", retryCount },
+                { "x-original-queue", originalQueue },
+                { "x-fail-reason", reason},
+                { "x-failed-at", DateTimeOffset.UtcNow.ToString("O") },
+            }
+        };
+
+        await channel.BasicPublishAsync(
+            exchange: "",
+            routingKey: "orders.poison",
+            mandatory: false,
+            basicProperties: retryProps,
+            body: ea.Body.ToArray()
+        );
+
         return;
     }
 

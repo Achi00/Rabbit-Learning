@@ -39,6 +39,8 @@ namespace RabbitMQ.Application
 
             await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false, arguments: dlqArgs);
             await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
+            // failer queues go here after retries
+            await channel.QueueDeclareAsync("orders.poison", durable: true, exclusive: false, autoDelete: false);
 
             await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "orders");
             await channel.QueueBindAsync("orders.dlq", "orders.dlx", routingKey: string.Empty);
