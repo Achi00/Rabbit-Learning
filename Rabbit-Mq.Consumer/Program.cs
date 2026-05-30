@@ -25,6 +25,7 @@ consumer.ReceivedAsync += async (model, ea) =>
         _ => null
     };
 
+    // in case we passed stated retry counts
     if (waitQueue is null)
     {
         Console.WriteLine("Message failed permanently, dropping message");
@@ -62,6 +63,7 @@ consumer.ReceivedAsync += async (model, ea) =>
             body: ea.Body.ToArray()
         );
 
+        await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, false);
         return;
     }
 
