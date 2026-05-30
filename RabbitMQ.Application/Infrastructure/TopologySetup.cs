@@ -2,6 +2,7 @@
 
 namespace RabbitMQ.Application.Infrastructure
 {
+    // change to IHostedService? only will run on statup
     public static class TopologySetup
     {
         public static async Task SetupTopologyAsync(IChannel channel)
