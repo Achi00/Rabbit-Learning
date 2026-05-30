@@ -12,6 +12,8 @@ namespace RabbitMQ.Application.Infrastructure
             _connection = connection;
         }
 
+        public IConnection Connection => _connection;
+
         public async Task<RabbitMqConnectionProvider> CreateAsync(string hostName, CancellationToken ct = default)
         {
             var factory = new ConnectionFactory { HostName = hostName };
