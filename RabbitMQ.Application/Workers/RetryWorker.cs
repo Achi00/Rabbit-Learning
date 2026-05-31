@@ -68,7 +68,7 @@ namespace RabbitMQ.Application.Workers
 
                 // publish message to appropriate queue
                 await channel.BasicPublishAsync("", waitQueue, false, retryProp, ea.Body.ToArray());
-                // after we store in orders.poison we drop message from main queue
+                // drop message from main queue
                 await channel.BasicAckAsync(ea.DeliveryTag, false);
             };
 
