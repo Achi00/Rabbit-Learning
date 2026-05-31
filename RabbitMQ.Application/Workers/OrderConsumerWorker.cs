@@ -27,7 +27,7 @@ namespace RabbitMQ.Application.Workers
             consumer.ReceivedAsync += async (_, ea) =>
             {
                 var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-                _logger.LogInformation($"Processing: {message}");
+                _logger.LogInformation("Processing: {message}", message);
 
                 // simulate failure
                 await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);

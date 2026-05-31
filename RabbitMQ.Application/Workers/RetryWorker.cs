@@ -37,7 +37,7 @@ namespace RabbitMQ.Application.Workers
 
                 if (waitQueue is null)
                 {
-                    _logger.LogWarning($"Message pernamently failer after {retryCount} retries");
+                    _logger.LogWarning("Message pernamently failer after {retryCount} retries", retryCount);
 
                     var prop = new BasicProperties
                     {
@@ -55,7 +55,7 @@ namespace RabbitMQ.Application.Workers
                     return;
                 }
 
-                _logger.LogInformation($"Attempt {retryCount}, routing to {waitQueue}");
+                _logger.LogInformation("Attempt {retryCount}, routing to {waitQueue}", retryCount, waitQueue);
 
                 var retryProp = new BasicProperties
                 {
