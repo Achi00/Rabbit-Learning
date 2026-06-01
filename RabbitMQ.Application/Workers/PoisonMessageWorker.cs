@@ -38,10 +38,11 @@ namespace RabbitMQ.Application.Workers
                     retryCount,
                     failedAt);
 
+                // TODO: save in database in future
                 await Task.CompletedTask;
             };
 
-            await channel.BasicConsumeAsync("orders.queue", autoAck: false, consumer);
+            await channel.BasicConsumeAsync("orders.poison", autoAck: false, consumer);
             await Task.Delay(Timeout.Infinite, ct);
 
             await channel.DisposeAsync();
