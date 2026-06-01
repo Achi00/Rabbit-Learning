@@ -1,98 +1,113 @@
-﻿using RabbitMQ.Application.Infrastructure;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Workers;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-var factory = new ConnectionFactory { HostName = "localhost" };
-using var connection = await factory.CreateConnectionAsync();
-using var channel = await connection.CreateChannelAsync();
 
-await TopologySetup.SetupTopologyAsync(channel);
+var builder = Host.CreateApplicationBuilder(args);
 
-var consumer = new AsyncEventingBasicConsumer(channel);
 
-consumer.ReceivedAsync += async (model, ea) =>
-{
-    var headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>()!;
+// Workers
+builder.Services.AddHostedService<TopologySetup>();
+builder.Services.AddHostedService<OrderConsumerWorker>();
+builder.Services.AddHostedService<RetryWorker>();
+builder.Services.AddHostedService<PoisonMessageWorker>();
+var host = builder.Build();
+await host.RunAsync();
 
-    var retryCount = headers.TryGetValue("x-retry-count", out var val) ? Convert.ToInt32(val) : 0;
+//var factory = new ConnectionFactory { HostName = "localhost" };
+//using var connection = await factory.CreateConnectionAsync();
+//using var channel = await connection.CreateChannelAsync();
 
-    // set up in SetupTopologyAsync
-    var waitQueue = retryCount switch
-    {
-        0 => "orders.retry.5s",
-        1 => "orders.retry.30s",
-        2 => "orders.retry.300s",
-        _ => null
-    };
+//await TopologySetup.SetupTopologyAsync(channel);
 
-    // in case we passed stated retry counts
-    if (waitQueue is null)
-    {
-        Console.WriteLine("Message failed permanently, dropping message");
-        // ack message, drop it
-        //await channel.BasicAckAsync(ea.DeliveryTag, false);
-        // instead of ack message we send it to poison queue in case of future diagnosis
-        // Grab the original death reason RabbitMQ stamps on every dead-lettered message
-        var xDeath = ea.BasicProperties.Headers?.TryGetValue("x-death", out var d) == true
-            ? d as List<object>
-            : null;
+//var consumer = new AsyncEventingBasicConsumer(channel);
 
-        var firstDeath = xDeath?.FirstOrDefault() as Dictionary<string, object>;
+//consumer.ReceivedAsync += async (model, ea) =>
+//{
+//    var headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>()!;
 
-        var originalQueue = firstDeath?.TryGetValue("queue", out var q) == true ? q?.ToString() : "unknown";
+//    var retryCount = headers.TryGetValue("x-retry-count", out var val) ? Convert.ToInt32(val) : 0;
 
-        var reason = firstDeath?.TryGetValue("reason", out var r) == true ? r?.ToString() : "unknown";
+//    // set up in SetupTopologyAsync
+//    var waitQueue = retryCount switch
+//    {
+//        0 => "orders.retry.5s",
+//        1 => "orders.retry.30s",
+//        2 => "orders.retry.300s",
+//        _ => null
+//    };
 
-        var retryProps = new BasicProperties
-        {
-            Persistent = true,
-            Headers = new Dictionary<string, object?>
-            {
-                { "x-retry-count", retryCount },
-                { "x-original-queue", originalQueue },
-                { "x-fail-reason", reason},
-                { "x-failed-at", DateTimeOffset.UtcNow.ToString("O") },
-            }
-        };
+//    // in case we passed stated retry counts
+//    if (waitQueue is null)
+//    {
+//        Console.WriteLine("Message failed permanently, dropping message");
+//        // ack message, drop it
+//        //await channel.BasicAckAsync(ea.DeliveryTag, false);
+//        // instead of ack message we send it to poison queue in case of future diagnosis
+//        // Grab the original death reason RabbitMQ stamps on every dead-lettered message
+//        var xDeath = ea.BasicProperties.Headers?.TryGetValue("x-death", out var d) == true
+//            ? d as List<object>
+//            : null;
 
-        await channel.BasicPublishAsync(
-            exchange: "",
-            routingKey: "orders.poison",
-            mandatory: false,
-            basicProperties: retryProps,
-            body: ea.Body.ToArray()
-        );
+//        var firstDeath = xDeath?.FirstOrDefault() as Dictionary<string, object>;
 
-        await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, false);
-        return;
-    }
+//        var originalQueue = firstDeath?.TryGetValue("queue", out var q) == true ? q?.ToString() : "unknown";
 
-    Console.WriteLine($"Retrying (attempt {retryCount + 1})...");
+//        var reason = firstDeath?.TryGetValue("reason", out var r) == true ? r?.ToString() : "unknown";
 
-    // update headers
-    var props = new BasicProperties
-    {
-        Persistent = true,
-        Headers = new Dictionary<string, object>()
-        {
-            { "x-retry-count", retryCount + 1 }
-        }!
-    };
+//        var retryProps = new BasicProperties
+//        {
+//            Persistent = true,
+//            Headers = new Dictionary<string, object?>
+//            {
+//                { "x-retry-count", retryCount },
+//                { "x-original-queue", originalQueue },
+//                { "x-fail-reason", reason},
+//                { "x-failed-at", DateTimeOffset.UtcNow.ToString("O") },
+//            }
+//        };
 
-    // republish back to main exchange
-    await channel.BasicPublishAsync(
-        exchange: "",
-        routingKey: waitQueue,
-        mandatory: false,
-        basicProperties: props,
-        body: ea.Body.ToArray()
-    );
+//        await channel.BasicPublishAsync(
+//            exchange: "",
+//            routingKey: "orders.poison",
+//            mandatory: false,
+//            basicProperties: retryProps,
+//            body: ea.Body.ToArray()
+//        );
 
-    await channel.BasicAckAsync(ea.DeliveryTag, false);
+//        await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, false);
+//        return;
+//    }
 
-    await Task.Delay(500);
-};
+//    Console.WriteLine($"Retrying (attempt {retryCount + 1})...");
 
-await channel.BasicConsumeAsync(queue: "orders.queue", autoAck: false, consumer);
+//    // update headers
+//    var props = new BasicProperties
+//    {
+//        Persistent = true,
+//        Headers = new Dictionary<string, object>()
+//        {
+//            { "x-retry-count", retryCount + 1 }
+//        }!
+//    };
 
-Console.ReadLine();
+//    // republish back to main exchange
+//    await channel.BasicPublishAsync(
+//        exchange: "",
+//        routingKey: waitQueue,
+//        mandatory: false,
+//        basicProperties: props,
+//        body: ea.Body.ToArray()
+//    );
+
+//    await channel.BasicAckAsync(ea.DeliveryTag, false);
+
+//    await Task.Delay(500);
+//};
+
+//await channel.BasicConsumeAsync(queue: "orders.queue", autoAck: false, consumer);
+
+//Console.ReadLine();

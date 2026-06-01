@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using RabbitMQ.Application.Infrastructure;
-using RabbitMQ.Application.Workers;
+﻿using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Client;
 using System.Text;
 
@@ -11,22 +9,6 @@ using var channel = await connection.CreateChannelAsync();
 
 //await TopologySetup.SetupTopologyAsync(channel);
 
-var builder = Host.CreateApplicationBuilder(args);
-
-// Singleton connection — created once, shared across all workers
-var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
-builder.Services.AddSingleton(connectionProvider);
-
-// TopologySetup runs first before any BackgroundService starts
-builder.Services.AddHostedService<TopologySetup>();
-
-// Workers
-builder.Services.AddHostedService<OrderConsumerWorker>();
-builder.Services.AddHostedService<RetryWorker>();
-builder.Services.AddHostedService<PoisonMessageWorker>();
-
-var host = builder.Build();
-await host.RunAsync();
 
 
 for (int i = 1; i <= 1; i++)

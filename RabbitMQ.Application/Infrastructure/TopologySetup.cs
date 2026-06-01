@@ -1,9 +1,10 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Hosting;
+using RabbitMQ.Client;
 
 namespace RabbitMQ.Application.Infrastructure
 {
     // change to IHostedService? only will run on statup
-    public class TopologySetup
+    public class TopologySetup : IHostedService
     {
         private readonly RabbitMqConnectionProvider _provider;
 
