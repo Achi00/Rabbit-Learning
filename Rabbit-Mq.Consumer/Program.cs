@@ -8,6 +8,8 @@ using RabbitMQ.Client.Events;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
+builder.Services.AddSingleton(connectionProvider);
 
 // Workers
 builder.Services.AddHostedService<TopologySetup>();

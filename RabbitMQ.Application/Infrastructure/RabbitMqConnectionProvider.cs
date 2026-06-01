@@ -14,7 +14,7 @@ namespace RabbitMQ.Application.Infrastructure
 
         public IConnection Connection => _connection;
 
-        public async Task<RabbitMqConnectionProvider> CreateAsync(string hostName, CancellationToken ct = default)
+        public static async Task<RabbitMqConnectionProvider> CreateAsync(string hostName, CancellationToken ct = default)
         {
             var factory = new ConnectionFactory { HostName = hostName };
             var connection = await factory.CreateConnectionAsync(ct);
