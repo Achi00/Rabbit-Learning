@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Workers;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 
 var builder = Host.CreateApplicationBuilder(args);
 

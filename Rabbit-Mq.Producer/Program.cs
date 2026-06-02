@@ -9,9 +9,7 @@ using var channel = await connection.CreateChannelAsync();
 
 //await TopologySetup.SetupTopologyAsync(channel);
 
-
-
-for (int i = 1; i <= 1; i++)
+for (int i = 1; i <= 10; i++)
 {
     var message = Encoding.UTF8.GetBytes($"Job #{i}");
 
