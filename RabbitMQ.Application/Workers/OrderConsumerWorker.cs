@@ -51,9 +51,22 @@ namespace RabbitMQ.Application.Workers
                 catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Incorectly formed message, sending to poison queue");
-                    // this will still go through DLQ -> retry worker
-                    // if json data serialization/deserialization fails then retry wont make it work..
-                    await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
+
+                    var props = new BasicProperties
+                    {
+                        Persistent = true,
+                        Headers = new Dictionary<string, object?>
+                        {
+                            { "x-failure-type", "permanent" },
+                            { "x-failure-reason", ex.Message },
+                            { "x-failed-at", DateTimeOffset.UtcNow.ToString("o") }
+                        }
+                    };
+
+                    // add to poison
+                    await channel.BasicPublishAsync("", "orders.poison", false, props, ea.Body.ToArray());
+                    // remove from original prders.queue
+                    await channel.BasicAckAsync(ea.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
