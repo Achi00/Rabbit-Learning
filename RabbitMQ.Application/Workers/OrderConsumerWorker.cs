@@ -24,6 +24,7 @@ namespace RabbitMQ.Application.Workers
             var channel = await _provider.Connection.CreateChannelAsync();
             var consumer = new AsyncEventingBasicConsumer(channel);
 
+            // ack with condition
             consumer.ReceivedAsync += async (_, ea) =>
             {
                 var message = Encoding.UTF8.GetString(ea.Body.ToArray());

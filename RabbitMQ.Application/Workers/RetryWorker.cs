@@ -55,7 +55,7 @@ namespace RabbitMQ.Application.Workers
                     return;
                 }
 
-                _logger.LogInformation("Attempt {retryCount}, routing to {waitQueue}", retryCount, waitQueue);
+                _logger.LogInformation("Attempt {retryCount}, routing to {waitQueue}", retryCount + 1, waitQueue);
 
                 var retryProp = new BasicProperties
                 {

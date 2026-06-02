@@ -1,6 +1,7 @@
-﻿using RabbitMQ.Application.Infrastructure;
+﻿using RabbitMQ.Application.Models;
 using RabbitMQ.Client;
 using System.Text;
+using System.Text.Json;
 
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
@@ -9,13 +10,22 @@ using var channel = await connection.CreateChannelAsync();
 
 //await TopologySetup.SetupTopologyAsync(channel);
 
+Random rand = new Random();
+
 for (int i = 1; i <= 10; i++)
 {
-    var message = Encoding.UTF8.GetBytes($"Job #{i}");
+    var order = new OrderMessage
+    {
+        Id = i,
+        CustomerEmail = $"john{i}@example.com",
+        Amount = 199.99m + (i * rand.Next(1, 100))
+    };
 
-    await channel.BasicPublishAsync(exchange: "orders.exchange", routingKey: "orders", body: message);
+    var json = JsonSerializer.Serialize(order);
 
-    Console.WriteLine($"sent: {i} - {Guid.NewGuid()}");
+    await channel.BasicPublishAsync(exchange: "orders.exchange", routingKey: "orders", body: Encoding.UTF8.GetBytes(json));
+
+    Console.WriteLine($"sent Order with id: {i}");
 
     await Task.Delay(2000);
 }
