@@ -6,13 +6,9 @@ using System.Text.Json;
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 
-// channel options, activate publisher confirms
-var channelOptions = new CreateChannelOptions(
-    publisherConfirmationsEnabled: true, 
-    publisherConfirmationTrackingEnabled: true
-);
 
-using var channel = await connection.CreateChannelAsync(channelOptions);
+
+
 
 Random rand = new Random();
 
