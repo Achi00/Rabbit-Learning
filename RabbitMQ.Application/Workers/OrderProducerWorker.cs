@@ -26,7 +26,7 @@ namespace RabbitMQ.Application.Workers
                 publisherConfirmationTrackingEnabled: true
             );
 
-            using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
+            await using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
 
             var jobNumber = 1;
 
@@ -46,10 +46,31 @@ namespace RabbitMQ.Application.Workers
 
             while (attempts < maxAttempts)
             {
-                attempts++;
-                _logger.LogWarning("confirm timeout, attempt {Attempr}", attempts);
-                await Task.Delay(TimeSpan.FromSeconds(attempts * 2));
+                try
+                {
+                    using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                    cts.CancelAfter(TimeSpan.FromSeconds(5));
+                    // after introduced channelOptions in this specs this will wait for broker confirmation before returning
+                    await channel.BasicPublishAsync(
+                        exchange: "orders.exchange", 
+                        routingKey: "orders", 
+                        mandatory: false,
+                        basicProperties: new BasicProperties { Persistent = true },
+                        body: body, 
+                        cancellationToken: cts.Token
+                    );
+                    _logger.LogInformation("Confirmed: {message}", message);
+                    return;
+                }
+                // only if operation cancelation is caused by token
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                {
+                    attempts++;
+                    _logger.LogWarning("Connection timeout on attempt {Attempt} for {Message}", attempts, message);
+                    await Task.Delay(attempts * 2000, ct);
+                }
             }
+            _logger.LogError("Failed to confirm {Message} after {Max} attempts", message, maxAttempts);
         }
     }
 }
