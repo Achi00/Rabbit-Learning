@@ -13,6 +13,7 @@ builder.Services.AddHostedService<TopologySetup>();
 builder.Services.AddHostedService<OrderConsumerWorker>();
 builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
+
 var host = builder.Build();
 
 await host.RunAsync();
