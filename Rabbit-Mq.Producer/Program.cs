@@ -9,7 +9,8 @@ using var connection = await factory.CreateConnectionAsync();
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton<RabbitMqConnectionProvider>();
+var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
+builder.Services.AddSingleton(connectionProvider);
 // worker
 builder.Services.AddHostedService<OrderProducerWorker>();
 

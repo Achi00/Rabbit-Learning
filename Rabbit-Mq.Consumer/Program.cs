@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Services;
+using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Workers;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -13,6 +15,7 @@ builder.Services.AddHostedService<TopologySetup>();
 builder.Services.AddHostedService<OrderConsumerWorker>();
 builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
+builder.Services.AddScoped<IOrderProcessor, FakeOrderProcessor>();
 
 var host = builder.Build();
 
