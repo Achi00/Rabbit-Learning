@@ -33,7 +33,7 @@ namespace RabbitMQ.Application.Workers
             var order = new OrderMessage
             {
                 Id = Guid.NewGuid(),
-                Amount = 0,
+                Amount = 100,
                 CustomerEmail = "mail@gmail.com"
             };
 

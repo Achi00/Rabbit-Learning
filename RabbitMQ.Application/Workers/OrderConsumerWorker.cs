@@ -48,6 +48,7 @@ namespace RabbitMQ.Application.Workers
                     // all good if we reach here, we can remove message from queue
                     await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
+                // handle json formating errors, will not be retried
                 catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Incorectly formed message, sending to poison queue");
@@ -68,9 +69,16 @@ namespace RabbitMQ.Application.Workers
                     // remove from original prders.queue
                     await channel.BasicAckAsync(ea.DeliveryTag, false);
                 }
+                // handle gateway error, will be retried
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogWarning(ex, "Payment gateway unavailable, will retry again");
+                    await channel.BasicNackAsync(ea.DeliveryTag, false, false);
+                }
                 catch (Exception ex)
                 {
-                    // unexpected ex, will retry this later
+                    // unexpected ex, will retry this later because it is unknown, so will be safer this way
+                    // will be retried too
                     _logger.LogWarning(ex, "Transient failure, will retry");
                     await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }

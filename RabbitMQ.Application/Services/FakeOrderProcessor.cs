@@ -1,6 +1,7 @@
 ﻿using RabbitMQ.Application.Exceptions;
 using RabbitMQ.Application.Models;
 using RabbitMQ.Application.Services.Interfaces;
+using System.Text.Json;
 
 namespace RabbitMQ.Application.Services
 {
@@ -25,7 +26,11 @@ namespace RabbitMQ.Application.Services
 
             if (result <= 3)
             {
-                throw new HttpRequestException("Payment gateway unavailable");
+                throw new HttpRequestException("Payment gateway unavailable - will retry again");
+            }
+            else if (result >= 7)
+            {
+                throw new JsonException("Formatting error - will not retry again");
             }
 
             Console.WriteLine($"Processed order {order.Id}");
