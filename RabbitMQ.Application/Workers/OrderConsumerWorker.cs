@@ -34,16 +34,15 @@ namespace RabbitMQ.Application.Workers
             {
                 try
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-
+                    // uses SerializeToUtf8Bytes avoids string allocation
                     // attempt to deserialize, if fails its permanent failure, no need to retry message because data is invalid
-                    var order = JsonSerializer.Deserialize<OrderMessage>(message) ?? throw new InvalidOperationException("Deserialization returned null");
+                    var order = MessageSerializer.Deserialize<OrderMessage>(ea.Body.ToArray());
 
                     // attempt order processing, will be transiet failure if this fails
                     // ProcessOrderAsync is set up to fail or succeed
                     await _orderProcessor.ProcessOrderAsync(order);
 
-                    _logger.LogInformation("Processing: {message}", message);
+                    _logger.LogInformation("Processing: {order}", order);
 
                     // all good if we reach here, we can remove message from queue
                     await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);

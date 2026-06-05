@@ -39,15 +39,15 @@ namespace RabbitMQ.Application.Workers
 
             while (!ct.IsCancellationRequested)
             {
-                await PublishWithRetryAsync(channel, JsonSerializer.Serialize(order), ct);
+                var body = MessageSerializer.Serialize(order);
+                await PublishWithRetryAsync(channel, body, ct);
                 await Task.Delay(2000, ct);
             }
         }
 
         // helper
-        private async Task PublishWithRetryAsync(IChannel channel, string message, CancellationToken ct)
+        private async Task PublishWithRetryAsync(IChannel channel, byte[] body, CancellationToken ct)
         {
-            var body = Encoding.UTF8.GetBytes(message);
             var attempts = 0;
             const int maxAttempts = 3;
 
@@ -66,18 +66,18 @@ namespace RabbitMQ.Application.Workers
                         body: body, 
                         cancellationToken: cts.Token
                     );
-                    _logger.LogInformation("Confirmed: {message}", message);
+                    _logger.LogInformation("Confirmed: {body}", body);
                     return;
                 }
                 // only if operation cancelation is caused by token
                 catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                 {
                     attempts++;
-                    _logger.LogWarning("Connection timeout on attempt {Attempt} for {Message}", attempts, message);
+                    _logger.LogWarning("Connection timeout on attempt {Attempt} for {Body}", attempts, body);
                     await Task.Delay(attempts * 2000, ct);
                 }
             }
-            _logger.LogError("Failed to confirm {Message} after {Max} attempts", message, maxAttempts);
+            _logger.LogError("Failed to confirm {Body} after {Max} attempts", body, maxAttempts);
         }
     }
 }
