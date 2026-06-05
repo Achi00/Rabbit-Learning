@@ -26,7 +26,7 @@ namespace RabbitMQ.Application.Workers
 
             consumer.ReceivedAsync += async (_, ea) =>
             {
-                var headers = ea.BasicProperties.Headers;
+                var headers = ea.BasicProperties?.Headers;
                 var body = Encoding.UTF8.GetString(ea.Body.ToArray());
 
                 _logger.LogError(
@@ -36,7 +36,6 @@ namespace RabbitMQ.Application.Workers
                     GetHeader(headers, "x-failure-reason"),
                     GetHeader(headers, "x-failed-at")
                 );
-
                 // TODO: save in database in future
                 await Task.CompletedTask;
             };
@@ -47,7 +46,7 @@ namespace RabbitMQ.Application.Workers
             await channel.DisposeAsync();
         }
 
-        private string GetHeader(IDictionary<string, object>? headers, string key)
+        private string GetHeader(IDictionary<string, object?>? headers, string key)
         {
             if (headers == null || !headers.TryGetValue(key, out var value))
             {
