@@ -29,14 +29,13 @@ namespace RabbitMQ.Application.Workers
                 var headers = ea.BasicProperties.Headers;
                 var body = Encoding.UTF8.GetString(ea.Body.ToArray());
 
-                headers.TryGetValue("x-retry-count", out var retryCount);
-                headers.TryGetValue("x-failed-at", out var failedAt);
-
                 _logger.LogError(
-                    "Poison message - Body: {Body}, Retries: {RetryCount}, Failed At: {FailedAt}",
+                    "Poison message | Body: {Body} | Retries: {Retries} | Reason: {Reason} | FailedAt: {FailedAt}",
                     body,
-                    retryCount,
-                    failedAt);
+                    GetHeader(headers, "x-retry-count"),
+                    GetHeader(headers, "x-failure-reason"),
+                    GetHeader(headers, "x-failed-at")
+                );
 
                 // TODO: save in database in future
                 await Task.CompletedTask;
@@ -46,6 +45,16 @@ namespace RabbitMQ.Application.Workers
             await Task.Delay(Timeout.Infinite, ct);
 
             await channel.DisposeAsync();
+        }
+
+        private string GetHeader(IDictionary<string, object>? headers, string key)
+        {
+            if (headers == null || !headers.TryGetValue(key, out var value))
+            {
+                return "unknown";
+            }
+
+            return value is byte[] bytes ? Encoding.UTF8.GetString(bytes) : value?.ToString() ?? "unknown";
         }
     }
 }

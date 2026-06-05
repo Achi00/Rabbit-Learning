@@ -30,7 +30,7 @@ namespace RabbitMQ.Application.Services
             }
             else if (result >= 7)
             {
-                throw new JsonException("Formatting error - will not retry again");
+                throw new InvalidOrderException("Formatting error - will not retry again");
             }
 
             Console.WriteLine($"Processed order {order.Id}");
