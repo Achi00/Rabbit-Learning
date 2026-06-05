@@ -2,7 +2,7 @@
 {
     public sealed class OrderMessage
     {
-        public int Id { get; init; }
+        public Guid Id { get; init; }
         public decimal Amount { get; init; }
         public string CustomerEmail { get; init; }
     }

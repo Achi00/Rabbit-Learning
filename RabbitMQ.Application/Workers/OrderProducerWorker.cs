@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Models;
 using RabbitMQ.Client;
 using System.Text;
+using System.Text.Json;
 
 namespace RabbitMQ.Application.Workers
 {
@@ -28,16 +30,21 @@ namespace RabbitMQ.Application.Workers
 
             await using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
 
-            var jobNumber = 1;
+            var order = new OrderMessage
+            {
+                Id = Guid.NewGuid(),
+                Amount = 0,
+                CustomerEmail = "mail@gmail.com"
+            };
 
             while (!ct.IsCancellationRequested)
             {
-                await PublishWithRetryAsync(channel, $"Job #{jobNumber}", ct);
-                jobNumber++;
+                await PublishWithRetryAsync(channel, JsonSerializer.Serialize(order), ct);
                 await Task.Delay(2000, ct);
             }
         }
 
+        // helper
         private async Task PublishWithRetryAsync(IChannel channel, string message, CancellationToken ct)
         {
             var body = Encoding.UTF8.GetBytes(message);
