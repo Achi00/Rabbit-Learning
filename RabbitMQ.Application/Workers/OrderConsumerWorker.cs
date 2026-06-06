@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Application.Models;
 using RabbitMQ.Application.Services.Interfaces;
+using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -18,17 +20,27 @@ namespace RabbitMQ.Application.Workers
         private readonly RabbitMqConnectionProvider _provider;
         private readonly ILogger<OrderConsumerWorker> _logger;
         private readonly IOrderProcessor _orderProcessor;
+        private readonly IServiceProvider _serviceProvider;
 
-        public OrderConsumerWorker(RabbitMqConnectionProvider provider, ILogger<OrderConsumerWorker> logger, IOrderProcessor orderProcessor)
+        public OrderConsumerWorker(
+            RabbitMqConnectionProvider provider, 
+            ILogger<OrderConsumerWorker> logger, 
+            IOrderProcessor orderProcessor,
+            IServiceProvider serviceProvider
+            )
         {
             _provider = provider;
             _logger = logger;
             _orderProcessor = orderProcessor;
+            _serviceProvider = serviceProvider;
         }
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             var channel = await _provider.Connection.CreateChannelAsync();
             var consumer = new AsyncEventingBasicConsumer(channel);
+
+            // create scope per message
+            await using var scope = _serviceProvider.CreateAsyncScope();
 
             // ack with condition
             consumer.ReceivedAsync += async (_, ea) =>
@@ -41,13 +53,17 @@ namespace RabbitMQ.Application.Workers
 
                     var envelope = MessageSerializer.Deserialize<MessageEnvelope>(ea.Body.ToArray());
 
-                    var message = envelope.MessageType switch
-                    {
-                        "OrderCreated" => envelope.Payload.Deserialize<OrderMessage>(),
-                        "OrderCancelled" => envelope.Payload.Deserialize<OrderCancelledEvent>(),
-                        _ => throw new InvalidOperationException($"Unknown type: {envelope.MessageType}")
-                    };
+                    //var message = envelope.MessageType switch
+                    //{
+                    //    "OrderCreated" => envelope.Payload.Deserialize<OrderMessage>(),
+                    //    "OrderCancelled" => envelope.Payload.Deserialize<OrderCancelledEvent>(),
+                    //    _ => throw new InvalidOperationException($"Unknown type: {envelope.MessageType}")
+                    //};
 
+                    var handler = scope.ServiceProvider.GetKeyedService<IMessageHandler>(envelope.MessageType)
+                        ?? throw new InvalidOperationException($"No handler registered for {envelope.MessageType}");
+
+                    await handler.HandleAsync(envelope.Payload);
                     // attempt order processing, will be transiet failure if this fails
                     // ProcessOrderAsync is set up to fail or succeed
                     await _orderProcessor.ProcessOrderAsync(order);

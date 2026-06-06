@@ -14,6 +14,7 @@ builder.Services.AddSingleton(connectionProvider);
 // worker
 builder.Services.AddHostedService<OrderProducerWorker>();
 
+
 var host = builder.Build();
 
 await host.RunAsync();
