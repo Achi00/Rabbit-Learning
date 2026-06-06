@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Application.Models;
 using RabbitMQ.Client;
 using System.Text;
@@ -39,15 +40,21 @@ namespace RabbitMQ.Application.Workers
 
             while (!ct.IsCancellationRequested)
             {
-                var body = MessageSerializer.Serialize(order);
-                await PublishWithRetryAsync(channel, body, ct);
+                var envelope = new MessageEnvelope
+                {
+                    MessageType = "OrderCreated",
+                    Payload = JsonSerializer.SerializeToElement(order)
+                };
+                //var body = MessageSerializer.Serialize(order);
+                await PublishWithRetryAsync(channel, envelope, ct);
                 await Task.Delay(2000, ct);
             }
         }
 
         // helper
-        private async Task PublishWithRetryAsync(IChannel channel, byte[] body, CancellationToken ct)
+        private async Task PublishWithRetryAsync(IChannel channel, MessageEnvelope envelope, CancellationToken ct)
         {
+            var body = MessageSerializer.Serialize(envelope);
             var attempts = 0;
             const int maxAttempts = 3;
 
@@ -57,16 +64,27 @@ namespace RabbitMQ.Application.Workers
                 {
                     using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                     cts.CancelAfter(TimeSpan.FromSeconds(5));
+
+                    // add props for future pland like this envelope pattern and also for idempotency in future
+                    var props = new BasicProperties
+                    {
+                        Persistent = true,
+                        ContentType = "application/json",
+                        MessageId = envelope.MessageId.ToString()
+                    };
+
+
                     // after introduced channelOptions in this specs this will wait for broker confirmation before returning
                     await channel.BasicPublishAsync(
                         exchange: "orders.exchange", 
                         routingKey: "orders", 
                         mandatory: false,
-                        basicProperties: new BasicProperties { Persistent = true },
+                        basicProperties: props,
                         body: body, 
                         cancellationToken: cts.Token
                     );
-                    _logger.LogInformation("Confirmed: {body}", body);
+
+                    _logger.LogInformation("Confirmed: {Type} {Id}", envelope.MessageType, envelope.MessageId);
                     return;
                 }
                 // only if operation cancelation is caused by token
@@ -77,7 +95,7 @@ namespace RabbitMQ.Application.Workers
                     await Task.Delay(attempts * 2000, ct);
                 }
             }
-            _logger.LogError("Failed to confirm {Body} after {Max} attempts", body, maxAttempts);
+            _logger.LogError("Failed to confirm {Type} {Id} after {Max} attempts", envelope.MessageType, envelope.MessageId, maxAttempts);
         }
     }
 }

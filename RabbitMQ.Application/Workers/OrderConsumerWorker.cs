@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Application.Models;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Client;
@@ -37,6 +38,15 @@ namespace RabbitMQ.Application.Workers
                     // uses SerializeToUtf8Bytes avoids string allocation
                     // attempt to deserialize, if fails its permanent failure, no need to retry message because data is invalid
                     var order = MessageSerializer.Deserialize<OrderMessage>(ea.Body.ToArray());
+
+                    var envelope = MessageSerializer.Deserialize<MessageEnvelope>(ea.Body.ToArray());
+
+                    var message = envelope.MessageType switch
+                    {
+                        "OrderCreated" => envelope.Payload.Deserialize<OrderMessage>(),
+                        "OrderCancelled" => envelope.Payload.Deserialize<OrderCancelledEvent>(),
+                        _ => throw new InvalidOperationException($"Unknown type: {envelope.MessageType}")
+                    };
 
                     // attempt order processing, will be transiet failure if this fails
                     // ProcessOrderAsync is set up to fail or succeed
