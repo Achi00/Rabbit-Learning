@@ -10,9 +10,9 @@ namespace RabbitMQ.Application.Services.Messages.Orders
     public class OrderCancelledHandler : IMessageHandler
     {
         private readonly IOrderCancelProcessor _orderCancelProcessor;
-        private readonly ILogger<OrderCreatedHandler> _logger;
+        private readonly ILogger<OrderCancelledHandler> _logger;
 
-        public OrderCancelledHandler(IOrderCancelProcessor orderCancelProcessor, ILogger<OrderCreatedHandler> logger)
+        public OrderCancelledHandler(IOrderCancelProcessor orderCancelProcessor, ILogger<OrderCancelledHandler> logger)
         {
             _orderCancelProcessor = orderCancelProcessor;
             _logger = logger;

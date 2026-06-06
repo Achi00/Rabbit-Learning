@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Application.Models;
@@ -31,19 +32,24 @@ namespace RabbitMQ.Application.Workers
 
             await using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
 
-            var order = new OrderMessage
-            {
-                Id = Guid.NewGuid(),
-                Amount = 100,
-                CustomerEmail = "mail@gmail.com"
-            };
-
             while (!ct.IsCancellationRequested)
             {
+                var order = new OrderMessage
+                {
+                    Id = Guid.NewGuid(),
+                    Amount = 100,
+                    CustomerEmail = "mail@gmail.com"
+                };
+
+                // switch between create and cancel order
+                var messageType = DateTime.UtcNow.Second % 2 == 0
+                    ? MessageTypes.OrderCreated
+                    : MessageTypes.OrderCancelled;
+
                 var envelope = new MessageEnvelope
                 {
                     // determines type and which handler/service to use hor this message
-                    MessageType = "OrderCreated",
+                    MessageType = messageType.ToString(),
                     Payload = JsonSerializer.SerializeToElement(order)
                 };
                 //var body = MessageSerializer.Serialize(order);
