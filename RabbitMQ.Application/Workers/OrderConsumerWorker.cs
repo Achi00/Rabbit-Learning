@@ -47,33 +47,24 @@ namespace RabbitMQ.Application.Workers
             {
                 try
                 {
-                    // uses SerializeToUtf8Bytes avoids string allocation
-                    // attempt to deserialize, if fails its permanent failure, no need to retry message because data is invalid
-                    var order = MessageSerializer.Deserialize<OrderMessage>(ea.Body.ToArray());
-
                     var envelope = MessageSerializer.Deserialize<MessageEnvelope>(ea.Body.ToArray());
-
-                    //var message = envelope.MessageType switch
-                    //{
-                    //    "OrderCreated" => envelope.Payload.Deserialize<OrderMessage>(),
-                    //    "OrderCancelled" => envelope.Payload.Deserialize<OrderCancelledEvent>(),
-                    //    _ => throw new InvalidOperationException($"Unknown type: {envelope.MessageType}")
-                    //};
-
+                    /*
+                     * even this bg service is singleton, creating scoped service directly 
+                     * from singleton each message should have 
+                     * its own short lived DI container 
+                     */
                     var handler = scope.ServiceProvider.GetKeyedService<IMessageHandler>(envelope.MessageType)
                         ?? throw new InvalidOperationException($"No handler registered for {envelope.MessageType}");
 
                     await handler.HandleAsync(envelope.Payload);
-                    // attempt order processing, will be transiet failure if this fails
-                    // ProcessOrderAsync is set up to fail or succeed
-                    await _orderProcessor.ProcessOrderAsync(order);
 
-                    _logger.LogInformation("Processing: {order}", order);
+                    _logger.LogInformation("Choosing handler for type: {Handler}", envelope.MessageType);
 
                     // all good if we reach here, we can remove message from queue
                     await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
                 // handle json formating errors, will not be retried
+                // goes to poison
                 catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Incorectly formed message, sending to poison queue");
@@ -103,7 +94,6 @@ namespace RabbitMQ.Application.Workers
                 catch (Exception ex)
                 {
                     // unexpected ex, will retry this later because it is unknown, so will be safer this way
-                    // will be retried too
                     _logger.LogWarning(ex, "Transient failure, will retry");
                     await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }

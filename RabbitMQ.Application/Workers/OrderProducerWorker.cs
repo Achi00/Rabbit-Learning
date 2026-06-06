@@ -42,6 +42,7 @@ namespace RabbitMQ.Application.Workers
             {
                 var envelope = new MessageEnvelope
                 {
+                    // determines type and which handler/service to use hor this message
                     MessageType = "OrderCreated",
                     Payload = JsonSerializer.SerializeToElement(order)
                 };
