@@ -21,7 +21,7 @@ namespace RabbitMQ.Application.Services
             // testing with random values
             await Task.Delay(500);
 
-            if (_random.Next(1, 10) <= 3)
+            if (_random.Next(1, 10) <= 6)
             {
                 throw new HttpRequestException("Refund service unavailable");
             }

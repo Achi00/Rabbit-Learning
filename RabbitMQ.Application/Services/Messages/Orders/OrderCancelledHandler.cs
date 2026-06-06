@@ -21,7 +21,7 @@ namespace RabbitMQ.Application.Services.Messages.Orders
         {
             var order = payload.Deserialize<OrderMessage>();
 
-            _logger.LogInformation("Cancelling order {Order}", order);
+            _logger.LogInformation("Cancelling order {OrderId} for {Email}", order.Id, order.CustomerEmail);
             await _orderCancelProcessor.CancelOrderAsync(order);
         }
     }
