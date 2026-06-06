@@ -4,14 +4,14 @@ using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Services.Messages
+namespace RabbitMQ.Application.Services.Messages.Orders
 {
     public class OrderCreatedHandler : IMessageHandler
     {
-        private readonly IOrderProcessor _orderProcessor;
+        private readonly IOrderCreateProcessor _orderProcessor;
         private readonly ILogger<OrderCreatedHandler> _logger;
 
-        public OrderCreatedHandler(IOrderProcessor orderProcessor, ILogger<OrderCreatedHandler> logger)
+        public OrderCreatedHandler(IOrderCreateProcessor orderProcessor, ILogger<OrderCreatedHandler> logger)
         {
             _orderProcessor = orderProcessor;
             _logger = logger;

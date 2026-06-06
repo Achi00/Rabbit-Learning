@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace RabbitMQ.Application.Services
 {
-    public sealed class FakeOrderProcessor : IOrderProcessor
+    public sealed class FakeOrderProcessor : IOrderCreateProcessor
     {
         // 70% success 30% failure, to test different acknowledgement patterns
         private readonly Random _random = new Random();

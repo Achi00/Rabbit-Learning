@@ -2,7 +2,7 @@
 
 namespace RabbitMQ.Application.Services.Interfaces
 {
-    public interface IOrderProcessor
+    public interface IOrderCreateProcessor
     {
         Task ProcessOrderAsync(OrderMessage order);
     }

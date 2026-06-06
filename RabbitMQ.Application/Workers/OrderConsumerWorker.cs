@@ -19,13 +19,13 @@ namespace RabbitMQ.Application.Workers
         // our created provider
         private readonly RabbitMqConnectionProvider _provider;
         private readonly ILogger<OrderConsumerWorker> _logger;
-        private readonly IOrderProcessor _orderProcessor;
+        private readonly IOrderCreateProcessor _orderProcessor;
         private readonly IServiceProvider _serviceProvider;
 
         public OrderConsumerWorker(
             RabbitMqConnectionProvider provider, 
             ILogger<OrderConsumerWorker> logger, 
-            IOrderProcessor orderProcessor,
+            IOrderCreateProcessor orderProcessor,
             IServiceProvider serviceProvider
             )
         {
@@ -53,6 +53,7 @@ namespace RabbitMQ.Application.Workers
                      * from singleton each message should have 
                      * its own short lived DI container 
                      */
+                    // will grab type based on what value it has passed in envelope.MessageType e.g "OrderCreated"
                     var handler = scope.ServiceProvider.GetKeyedService<IMessageHandler>(envelope.MessageType)
                         ?? throw new InvalidOperationException($"No handler registered for {envelope.MessageType}");
 
