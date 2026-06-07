@@ -30,7 +30,7 @@ namespace RabbitMQ.Application.Services.Messages.Orders
                 _logger.LogWarning("Duplicater message {MessageId}", messageId);
                 return;
             }
-            var order = payload.Deserialize<OrderMessage>();
+            var order = payload.Deserialize<OrderMessage>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
 
             _logger.LogInformation("Cancelling order {OrderId} for {Email}", order.Id, order.CustomerEmail);
             await _orderCancelProcessor.CancelOrderAsync(order);
