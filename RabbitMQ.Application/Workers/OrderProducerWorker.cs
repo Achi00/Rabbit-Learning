@@ -45,9 +45,11 @@ namespace RabbitMQ.Application.Workers
                     };
 
                     // switch between create and cancel order
-                    var messageType = DateTime.UtcNow.Second % 2 == 0
-                        ? MessageTypes.OrderCreated
-                        : MessageTypes.OrderCancelled;
+                    //var messageType = DateTime.UtcNow.Second % 2 == 0
+                    //    ? MessageTypes.OrderCreated
+                    //    : MessageTypes.OrderCancelled;
+
+                    var messageType = MessageTypes.OrderCreated;
 
                     var envelope = new MessageEnvelope
                     {
