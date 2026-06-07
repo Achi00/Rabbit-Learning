@@ -31,29 +31,34 @@ namespace RabbitMQ.Application.Workers
             );
 
             await using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
-
+            bool sent = false;
             while (!ct.IsCancellationRequested)
             {
-                var order = new OrderMessage
+                // test single message send for idempotency
+                if (!sent)
                 {
-                    Id = Guid.NewGuid(),
-                    Amount = 100,
-                    CustomerEmail = "mail@gmail.com"
-                };
+                    var order = new OrderMessage
+                    {
+                        Id = Guid.NewGuid(),
+                        Amount = 100,
+                        CustomerEmail = "mail@gmail.com"
+                    };
 
-                // switch between create and cancel order
-                var messageType = DateTime.UtcNow.Second % 2 == 0
-                    ? MessageTypes.OrderCreated
-                    : MessageTypes.OrderCancelled;
+                    // switch between create and cancel order
+                    var messageType = DateTime.UtcNow.Second % 2 == 0
+                        ? MessageTypes.OrderCreated
+                        : MessageTypes.OrderCancelled;
 
-                var envelope = new MessageEnvelope
-                {
-                    // determines type and which handler/service to use hor this message
-                    MessageType = messageType.ToString(),
-                    Payload = JsonSerializer.SerializeToElement(order)
-                };
-                //var body = MessageSerializer.Serialize(order);
-                await PublishWithRetryAsync(channel, envelope, ct);
+                    var envelope = new MessageEnvelope
+                    {
+                        // determines type and which handler/service to use hor this message
+                        MessageType = messageType.ToString(),
+                        Payload = JsonSerializer.SerializeToElement(order)
+                    };
+                    //var body = MessageSerializer.Serialize(order);
+                    await PublishWithRetryAsync(channel, envelope, ct);
+                    sent = true;
+                }
                 await Task.Delay(2000, ct);
             }
         }
