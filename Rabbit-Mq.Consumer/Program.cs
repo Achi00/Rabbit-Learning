@@ -5,6 +5,7 @@ using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMQ.Application.Services;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
+using RabbitMQ.Application.Services.Messages;
 using RabbitMQ.Application.Services.Messages.Orders;
 using RabbitMQ.Application.Workers;
 
@@ -19,12 +20,14 @@ builder.Services.AddHostedService<OrderConsumerWorker>();
 builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
-// type handlers
+// Type handlers
 builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>("OrderCreated");
 builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>("OrderCancelled");
-
+// Services
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
 builder.Services.AddScoped<IOrderCancelProcessor, FakeOrderCancelProcessor>();
+// Idempotancy service
+builder.Services.AddSingleton<InMemoryIdempotencyService>();
 
 var host = builder.Build();
 

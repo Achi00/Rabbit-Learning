@@ -3,6 +3,7 @@
 namespace RabbitMQ.Application.Services.Messages
 {
     // simple in memory idempotacny checks
+    // registered as singleton because it must survive between messages
     public class InMemoryIdempotencyService
     {
         private readonly ConcurrentDictionary<Guid, DateTimeOffset> _processed = new();
