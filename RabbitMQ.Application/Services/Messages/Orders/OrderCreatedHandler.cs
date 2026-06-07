@@ -22,23 +22,23 @@ namespace RabbitMQ.Application.Services.Messages.Orders
             _logger = logger;
         }
 
-        public async Task HandleAsync(JsonElement payload)
+        public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
-            var order = payload.Deserialize<OrderMessage>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
             
             // check is this message is seen before doing work
-            if (_idempotency.IsDuplicate(order.Id))
+            if (_idempotency.IsDuplicate(messageId))
             {
-                _logger.LogWarning("Duplicater message {OrderId}", order.Id);
+                _logger.LogWarning("Duplicater message {MessageId}", messageId);
                 // caller will ack this message, message should be handled at this poing
                 return;
             }
+            var order = payload.Deserialize<OrderMessage>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
 
             _logger.LogInformation("processing order {Order}", order);
             await _orderProcessor.ProcessOrderAsync(order);
 
             // record message as processed
-            _idempotency.MarkAsProcessed(order.Id);
+            _idempotency.MarkAsProcessed(messageId);
         }
     }
 }

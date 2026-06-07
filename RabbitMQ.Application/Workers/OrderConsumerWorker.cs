@@ -57,7 +57,8 @@ namespace RabbitMQ.Application.Workers
                     var handler = scope.ServiceProvider.GetKeyedService<IMessageHandler>(envelope.MessageType)
                         ?? throw new InvalidOperationException($"No handler registered for {envelope.MessageType}");
 
-                    await handler.HandleAsync(envelope.Payload);
+                    // passing message id same as envelope, not bussiness id, this will avoid collisions between messages
+                    await handler.HandleAsync(envelope.Payload, envelope.MessageId);
 
                     _logger.LogInformation("Choosing handler for type: {Handler}", envelope.MessageType);
 
