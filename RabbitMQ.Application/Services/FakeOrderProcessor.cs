@@ -21,17 +21,17 @@ namespace RabbitMQ.Application.Services
                 throw new InvalidOrderException("Order amount must be positive value");
             }
             await Task.Delay(1000);
-            // removed to test idempotency
-            //var result = _random.Next(1, 10);
 
-            //if (result <= 3)
-            //{
-            //    throw new HttpRequestException("Payment gateway unavailable - will retry again");
-            //}
-            //else if (result >= 7)
-            //{
-            //    throw new InvalidOrderException("Formatting error - will not retry again");
-            //}
+            var result = _random.Next(1, 10);
+
+            if (result <= 3)
+            {
+                throw new HttpRequestException("Payment gateway unavailable - will retry again");
+            }
+            else if (result >= 7)
+            {
+                throw new InvalidOrderException("Formatting error - will not retry again");
+            }
 
             Console.WriteLine($"Processed order {order.Id}");
         }

@@ -37,11 +37,8 @@ namespace RabbitMQ.Application.Services.Messages.Orders
             _logger.LogInformation("processing order {Order}", order);
             await _orderProcessor.ProcessOrderAsync(order);
 
-
             // record message as processed
             _idempotency.MarkAsProcessed(messageId);
-            // simulate crash after processing and recording
-            throw new Exception("Simulated crash before marking processed");
         }
     }
 }
