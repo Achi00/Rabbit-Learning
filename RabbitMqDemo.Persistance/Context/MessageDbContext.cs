@@ -7,8 +7,8 @@ namespace RabbitMqDemo.Persistance.Context
     {
         public MessageDbContext(DbContextOptions options) : base(options) { }
 
-        public DbSet<ProcessedMessages> Messages => Set<ProcessedMessages>();
-        public DbSet<Orders> Orders => Set<Orders>();
+        public DbSet<ProcessedMessage> Messages => Set<ProcessedMessage>();
+        public DbSet<Order> Orders => Set<Order>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,6 +1,6 @@
 ﻿namespace RabbitMq.Domain.Entity
 {
-    public sealed class Orders
+    public sealed class Order
     {
         public Guid Id { get; init; }
         public decimal Amount { get; init; }
