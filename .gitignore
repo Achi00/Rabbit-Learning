@@ -482,3 +482,5 @@ $RECYCLE.BIN/
 *.swp
 /RabbitMq.Producer/appsettings.json
 /RabbitMq.Consumer/appsettings.json
+/Rabbit-Mq.Consumer/appsettings.json
+/Rabbit-Mq.Producer/appsettings.json
