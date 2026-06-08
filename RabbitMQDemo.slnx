@@ -5,6 +5,10 @@
   </Folder>
   <Folder Name="/Core/">
     <Project Path="RabbitMQ.Application/RabbitMQ.Application.csproj" Id="adadc3d9-e9ac-4a95-9730-93e253a8d1eb" />
+    <Project Path="RabbitMq.Domain/RabbitMq.Domain.csproj" Id="580a39fb-bac8-49b4-a093-b122bfcac439" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="RabbitMqDemo.Persistance/RabbitMqDemo.Persistance.csproj" Id="c43c3e3b-ec78-4b8a-b9e3-08ca145a7093" />
   </Folder>
   <Folder Name="/Server/">
     <Project Path="RabbitMq.Consumer/RabbitMq.Consumer.csproj" />
