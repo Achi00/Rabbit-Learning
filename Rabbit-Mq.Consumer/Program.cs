@@ -40,7 +40,7 @@ builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>("OrderCa
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
 builder.Services.AddScoped<IOrderCancelProcessor, FakeOrderCancelProcessor>();
 // Idempotancy service
-builder.Services.AddSingleton<InMemoryIdempotencyService>();
+builder.Services.AddScoped<DbIdempotencyService>();
 
 var host = builder.Build();
 
