@@ -7,7 +7,7 @@ using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMQ.Application.Services;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
-using RabbitMQ.Application.Services.Messages;
+using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMQ.Application.Services.Messages.Orders;
 using RabbitMQ.Application.Workers;
 using RabbitMqDemo.Persistance.Context;

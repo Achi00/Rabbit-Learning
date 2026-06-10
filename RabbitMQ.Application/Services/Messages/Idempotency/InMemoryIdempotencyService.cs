@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace RabbitMQ.Application.Services.Messages
+namespace RabbitMQ.Application.Services.Messages.Idempotency
 {
     // simple in memory idempotacny checks
     // registered as singleton because it must survive between messages

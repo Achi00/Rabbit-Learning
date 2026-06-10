@@ -2,6 +2,7 @@
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
+using RabbitMQ.Application.Services.Messages.Idempotency;
 using System.Text.Json;
 
 namespace RabbitMQ.Application.Services.Messages.Orders
