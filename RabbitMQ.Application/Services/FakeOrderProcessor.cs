@@ -1,7 +1,6 @@
-﻿using RabbitMQ.Application.Exceptions;
-using RabbitMQ.Application.Models;
+﻿using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Exceptions;
 using RabbitMQ.Application.Services.Interfaces;
-using System.Text.Json;
 
 namespace RabbitMQ.Application.Services
 {
@@ -9,7 +8,7 @@ namespace RabbitMQ.Application.Services
     {
         // 70% success 30% failure, to test different acknowledgement patterns
         private readonly Random _random = new Random();
-        public async Task ProcessOrderAsync(OrderMessage order)
+        public async Task ProcessOrderAsync(Order order)
         {
             if (string.IsNullOrWhiteSpace(order.CustomerEmail))
             {

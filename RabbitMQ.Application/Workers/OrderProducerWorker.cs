@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Infrastructure.Envelope;
-using RabbitMQ.Application.Models;
 using RabbitMQ.Client;
-using System.Text;
 using System.Text.Json;
 
 namespace RabbitMQ.Application.Workers
@@ -34,7 +33,7 @@ namespace RabbitMQ.Application.Workers
 
             while (!ct.IsCancellationRequested)
             {
-                var order = new OrderMessage
+                var order = new Order
                 {
                     Id = Guid.NewGuid(),
                     Amount = 100,

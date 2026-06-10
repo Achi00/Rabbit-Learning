@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using RabbitMQ.Application.Models;
+using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using System.Text.Json;
@@ -32,7 +32,7 @@ namespace RabbitMQ.Application.Services.Messages.Orders
                 // caller will ack this message, message should be handled at this poing
                 return;
             }
-            var order = payload.Deserialize<OrderMessage>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
+            var order = payload.Deserialize<Order>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
 
             _logger.LogInformation("processing order {Order}", order);
             await _orderProcessor.ProcessOrderAsync(order);

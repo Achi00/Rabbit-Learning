@@ -1,9 +1,9 @@
-﻿using RabbitMQ.Application.Models;
+﻿using RabbitMq.Domain.Entity;
 
 namespace RabbitMQ.Application.Interfaces.Messages
 {
     public interface IOrderCancelProcessor
     {
-        Task CancelOrderAsync(OrderMessage? order);
+        Task CancelOrderAsync(Order? order);
     }
 }

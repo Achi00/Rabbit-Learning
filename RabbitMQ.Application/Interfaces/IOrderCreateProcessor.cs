@@ -1,9 +1,9 @@
-﻿using RabbitMQ.Application.Models;
+﻿using RabbitMq.Domain.Entity;
 
 namespace RabbitMQ.Application.Services.Interfaces
 {
     public interface IOrderCreateProcessor
     {
-        Task ProcessOrderAsync(OrderMessage order);
+        Task ProcessOrderAsync(Order order);
     }
 }

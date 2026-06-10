@@ -1,13 +1,13 @@
-﻿using RabbitMQ.Application.Exceptions;
+﻿using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Exceptions;
 using RabbitMQ.Application.Interfaces.Messages;
-using RabbitMQ.Application.Models;
 
 namespace RabbitMQ.Application.Services
 {
     public class FakeOrderCancelProcessor : IOrderCancelProcessor
     {
         private readonly Random _random = new Random();
-        public async Task CancelOrderAsync(OrderMessage? order)
+        public async Task CancelOrderAsync(Order? order)
         {
             if (order == null)
             {
