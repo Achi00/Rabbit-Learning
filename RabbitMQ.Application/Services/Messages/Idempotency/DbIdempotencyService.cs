@@ -13,11 +13,12 @@ namespace RabbitMQ.Application.Services.Messages.Idempotency
             _context = context;
         }
 
-        public async Task<bool> IdDuplicateAsync(Guid messageId)
+        public async Task<bool> IsDuplicateAsync(Guid messageId)
         {
             return await _context.Messages.AnyAsync(m => m.MessageId == messageId);
         }
 
+        // no save changes here caller controlls transaction
         public void MarkAsProcessed(Guid messageId, string messageType)
         {
             _context.Messages.Add(new ProcessedMessage 
@@ -26,7 +27,6 @@ namespace RabbitMQ.Application.Services.Messages.Idempotency
                 MessageType = messageType,
                 ProcessedAt = DateTimeOffset.UtcNow
             });
-            // no save changes here caller controlls transaction
         }
     }
 }
