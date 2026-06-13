@@ -1,7 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Application.Infrastructure.Envelope;
+using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMqDemo.Persistance.Context;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace RabbitMQ.Application.Workers
 {
@@ -19,7 +24,8 @@ namespace RabbitMQ.Application.Workers
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                //await P
+                await ProcessPendingMessagesAsync(stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
 
@@ -27,6 +33,40 @@ namespace RabbitMQ.Application.Workers
         {
             await using var scope = _services.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<MessageDbContext>();
+
+            var publisher = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
+            // fetch unsent rows
+            var pending = await db.OutboxMessages
+                .Where(x => x.SentAt == null)
+                .OrderBy(x => x.CreatedAt)
+                .Take(50)
+                .ToListAsync(ct);
+
+            foreach (var message in pending)
+            {
+                try
+                {
+                    var envelope = new MessageEnvelope
+                    {
+                        MessageId = message.Id,
+                        MessageType = message.MessageType,
+                        Payload = JsonSerializer.Deserialize<JsonElement>(message.Payload)
+                    };
+
+                    await publisher.PublishAsync(envelope, ct);
+
+                    // mark as sent
+                    message.SentAt = DateTimeOffset.UtcNow;
+                    await db.SaveChangesAsync(ct);
+
+                    _logger.LogInformation("Relayed {MessageType} {MessageId}", message.MessageType, message.Id);
+                }
+                catch (Exception ex)
+                {
+                    // sentAt is null
+                    _logger.LogWarning(ex, "Failed to relay {MessageId}, will retry", message.Id);
+                }
+            }
         }
     }
 }
