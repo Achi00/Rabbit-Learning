@@ -6,7 +6,6 @@ using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace RabbitMQ.Application.Workers
 {
@@ -25,6 +24,7 @@ namespace RabbitMQ.Application.Workers
             while (!stoppingToken.IsCancellationRequested)
             {
                 await ProcessPendingMessagesAsync(stoppingToken);
+                // poll every 5 seconds
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }

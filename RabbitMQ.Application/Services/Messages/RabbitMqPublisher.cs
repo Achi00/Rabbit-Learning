@@ -1,0 +1,47 @@
+﻿using Microsoft.Extensions.Logging;
+using RabbitMQ.Application.Helpers;
+using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Infrastructure.Envelope;
+using RabbitMQ.Application.Interfaces.Messages;
+using RabbitMQ.Client;
+
+namespace RabbitMQ.Application.Services.Messages
+{
+    public class RabbitMqPublisher : IMessagePublisher
+    {
+        private readonly RabbitMqConnectionProvider _provider;
+        private readonly ILogger<RabbitMqPublisher> _logger;
+
+        public RabbitMqPublisher(RabbitMqConnectionProvider provider, ILogger<RabbitMqPublisher> logger)
+        {
+            _provider = provider;
+            _logger = logger;
+        }
+        public async Task PublishAsync(MessageEnvelope envelope, CancellationToken ct = default)
+        {
+            var (exchange, routingKey) = MessageRouting.Resolve(envelope.MessageType);
+
+            await using var channel = await _provider.Connection.CreateChannelAsync
+            (
+                new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true)    
+            );
+
+            var body = MessageSerializer.Serialize(envelope);
+
+            var props = new BasicProperties
+            {
+                Persistent = true,
+                ContentType = "application/json",
+                MessageId = envelope.MessageId.ToString(),
+                Type = envelope.MessageType
+            };
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            await channel.BasicPublishAsync(exchange, routingKey, false, props, body, cts.Token);
+
+            _logger.LogInformation("Published {MessageId} to {Exchange}/{RouteKey}", envelope.MessageId, exchange, routingKey);
+        }
+    }
+}
