@@ -7,6 +7,8 @@ using RabbitMQ.Client;
 
 namespace RabbitMQ.Application.Services.Messages
 {
+    // introducting this should be more extendable version of publishing messages with messagerouter with dict key, instead of hard code exchange + routeing key
+    // topic based routing instead of direct
     public class RabbitMqPublisher : IMessagePublisher
     {
         private readonly RabbitMqConnectionProvider _provider;

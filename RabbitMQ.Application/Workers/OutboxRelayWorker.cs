@@ -34,6 +34,7 @@ namespace RabbitMQ.Application.Workers
             await using var scope = _services.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<MessageDbContext>();
 
+            // custom RabbitMqPublisher, acts based on exchange and route key values passed
             var publisher = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
             // fetch unsent rows
             var pending = await db.OutboxMessages

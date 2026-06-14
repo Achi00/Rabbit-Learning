@@ -3,6 +3,7 @@
     public static class MessageRouting
     {
         // MessageType -> exchange, routing key
+        // adding one line here will work in RabbitMqPublisher
         private static readonly Dictionary<string, (string Exchange, string RoutingKey)> _routes = new()
         {
             ["OrderCreated"] = ("orders.exchange", "order.created"),

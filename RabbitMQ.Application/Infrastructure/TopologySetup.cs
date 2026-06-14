@@ -16,7 +16,13 @@ namespace RabbitMQ.Application.Infrastructure
         {
             using var channel = await _provider.Connection.CreateChannelAsync();
 
-            await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
+            // using new topic exchanges instead of direct
+            /*
+             old - await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
+            */
+            // introduced new topic exchange
+            await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "order.*");
+
             await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
 
             var queueArgs = new Dictionary<string, object>

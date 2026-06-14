@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Application.Infrastructure;
+using RabbitMQ.Application.Interfaces.Messages;
+using RabbitMQ.Application.Services.Messages;
 using RabbitMQ.Application.Workers;
 using RabbitMQ.Client;
 using RabbitMqDemo.Persistance.Context;
@@ -25,6 +27,10 @@ var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost
 builder.Services.AddSingleton(connectionProvider);
 // worker
 builder.Services.AddHostedService<OrderProducerWorker>();
+builder.Services.AddHostedService<OutboxRelayWorker>();
+
+// outbox
+builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 
 
 var host = builder.Build();
