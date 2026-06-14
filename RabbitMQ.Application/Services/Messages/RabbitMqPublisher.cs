@@ -26,6 +26,7 @@ namespace RabbitMQ.Application.Services.Messages
 
             await using var channel = await _provider.Connection.CreateChannelAsync
             (
+                // channel options, activate publisher confirms
                 new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true)    
             );
 

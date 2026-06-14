@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Infrastructure.Envelope;
 using RabbitMQ.Client;
+using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
 namespace RabbitMQ.Application.Workers
@@ -13,47 +15,52 @@ namespace RabbitMQ.Application.Workers
     // order producer with separated retry logic
     public class OrderProducerWorker : BackgroundService
     {
-        private readonly RabbitMqConnectionProvider _connectionProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<OrderProducerWorker> _logger;
 
-        public OrderProducerWorker(RabbitMqConnectionProvider connectionProvider, ILogger<OrderProducerWorker> logger)
+        public OrderProducerWorker(IServiceScopeFactory scopeFactory, ILogger<OrderProducerWorker> logger)
         {
-            _connectionProvider = connectionProvider;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
+        // move channle set up in RabbitMqPublisher service
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
-            // channel options, activate publisher confirms
-            var channelOptions = new CreateChannelOptions(
-                publisherConfirmationsEnabled: true,
-                publisherConfirmationTrackingEnabled: true
-            );
-
-            await using var channel = await _connectionProvider.Connection.CreateChannelAsync(channelOptions);
+            var sent = false;
 
             while (!ct.IsCancellationRequested)
             {
-                var order = new Order
+                if (!sent)
                 {
-                    Id = Guid.NewGuid(),
-                    Amount = 100,
-                    CustomerEmail = "mail@gmail.com"
-                };
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<MessageDbContext>();
 
-                // switch between create and cancel order
-                var messageType = DateTime.UtcNow.Second % 2 == 0
-                    ? MessageTypes.OrderCreated
-                    : MessageTypes.OrderCancelled;
+                    var order = new Order
+                    {
+                        Id = Guid.NewGuid(),
+                        Amount = 100,
+                        CustomerEmail = "mail@gmail.com"
+                    };
 
-                var envelope = new MessageEnvelope
-                {
-                    // determines type and which handler/service to use hor this message
-                    MessageType = messageType.ToString(),
-                    Payload = JsonSerializer.SerializeToElement(order)
-                };
-                //var body = MessageSerializer.Serialize(order);
-                await PublishWithRetryAsync(channel, envelope, ct);
-                await Task.Delay(2000, ct);
+                    var outboxMessage = new OutboxMessage
+                    {
+                        Id = Guid.NewGuid(),
+                        MessageType = MessageTypes.OrderCreated.ToString(),
+                        Payload = JsonSerializer.Serialize(order),
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        SentAt = null
+                    };
+
+                    await db.Orders.AddAsync(order, ct);
+                    await db.OutboxMessages.AddAsync(outboxMessage, ct);
+                    // atomic, both or none!!!
+                    await db.SaveChangesAsync(ct);
+
+                    _logger.LogInformation("Order {OrderId} written with outbox message {MessageId}", order.Id, outboxMessage.Id);
+
+                    sent = true;
+                }
+                await Task.Delay(1000, ct);
             }
         }
 
