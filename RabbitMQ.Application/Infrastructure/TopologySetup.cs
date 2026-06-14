@@ -21,6 +21,8 @@ namespace RabbitMQ.Application.Infrastructure
              old - await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Direct, durable: true);
             */
             // introduced new topic exchange
+            await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Topic, durable: true);
+
             await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "order.*");
 
             await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);

@@ -21,6 +21,7 @@ namespace RabbitMQ.Application.Services.Messages
         }
         public async Task PublishAsync(MessageEnvelope envelope, CancellationToken ct = default)
         {
+            // determins queue based on message type
             var (exchange, routingKey) = MessageRouting.Resolve(envelope.MessageType);
 
             await using var channel = await _provider.Connection.CreateChannelAsync
