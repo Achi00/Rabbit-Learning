@@ -26,7 +26,9 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
 var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
 builder.Services.AddSingleton(connectionProvider);
 // worker
+// writes to outbox
 builder.Services.AddHostedService<OrderProducerWorker>();
+// publishes from outbox
 builder.Services.AddHostedService<OutboxRelayWorker>();
 
 // outbox

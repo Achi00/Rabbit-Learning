@@ -23,8 +23,6 @@ namespace RabbitMQ.Application.Infrastructure
             // introduced new topic exchange
             await channel.ExchangeDeclareAsync("orders.exchange", ExchangeType.Topic, durable: true);
 
-            await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "order.*");
-
             await channel.ExchangeDeclareAsync("orders.dlx", ExchangeType.Fanout, durable: true);
 
             var queueArgs = new Dictionary<string, object>
@@ -35,6 +33,8 @@ namespace RabbitMQ.Application.Infrastructure
             await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false, arguments: queueArgs);
             await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
             await channel.QueueDeclareAsync("orders.poison", durable: true, exclusive: false, autoDelete: false);
+
+            await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "order.*");
 
             foreach (var delay in new[] { 5_000, 30_000, 300_000 })
             {
