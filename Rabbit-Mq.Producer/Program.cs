@@ -9,9 +9,6 @@ using RabbitMQ.Application.Workers;
 using RabbitMQ.Client;
 using RabbitMqDemo.Persistance.Context;
 
-var factory = new ConnectionFactory { HostName = "localhost" };
-using var connection = await factory.CreateConnectionAsync();
-
 var builder = Host.CreateApplicationBuilder(args);
 
 // dbcontext

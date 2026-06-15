@@ -47,6 +47,7 @@ namespace RabbitMQ.Application.Workers
             {
                 try
                 {
+                    // OutboxMessage -> MessageEnvelope
                     var envelope = new MessageEnvelope
                     {
                         MessageId = message.Id,
