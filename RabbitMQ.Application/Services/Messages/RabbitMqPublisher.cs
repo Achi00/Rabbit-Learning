@@ -24,7 +24,9 @@ namespace RabbitMQ.Application.Services.Messages
             // determins queue based on message type
             var (exchange, routingKey) = MessageRouting.Resolve(envelope.MessageType);
 
-            await using var channel = await _provider.Connection.CreateChannelAsync
+            var connection = await _provider.GetConnetionAsync();
+
+            await using var channel = await connection.CreateChannelAsync
             (
                 // channel options, activate publisher confirms
                 new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true)    

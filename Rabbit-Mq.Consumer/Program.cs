@@ -24,8 +24,10 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
-builder.Services.AddSingleton(connectionProvider);
+//var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
+
+// not connected at construct time, only when it is first used
+builder.Services.AddSingleton(new RabbitMqConnectionProvider("localhost"));
 
 // Workers
 builder.Services.AddHostedService<TopologySetup>();
