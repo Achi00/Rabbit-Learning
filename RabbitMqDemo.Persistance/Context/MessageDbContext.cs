@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Models;
 
 namespace RabbitMqDemo.Persistance.Context
 {
@@ -10,6 +11,7 @@ namespace RabbitMqDemo.Persistance.Context
         public DbSet<ProcessedMessage> Messages => Set<ProcessedMessage>();
         public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
         public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderSagaState> OrderSagaState => Set<OrderSagaState>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
