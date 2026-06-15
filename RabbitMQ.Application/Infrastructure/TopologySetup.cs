@@ -14,7 +14,8 @@ namespace RabbitMQ.Application.Infrastructure
         }
         public async Task StartAsync(CancellationToken ct)
         {
-            using var channel = await _provider.Connection.CreateChannelAsync();
+            var connection = await _provider.GetConnetionAsync();
+            var channel = await connection.CreateChannelAsync();
 
             // using new topic exchanges instead of direct
             /*

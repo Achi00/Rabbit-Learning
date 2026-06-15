@@ -19,7 +19,8 @@ namespace RabbitMQ.Application.Workers
         }
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
-            var channel = await _provider.Connection.CreateChannelAsync();
+            var connection = await _provider.GetConnetionAsync();
+            var channel = await connection.CreateChannelAsync();
             var consumer = new AsyncEventingBasicConsumer(channel);
 
             consumer.ReceivedAsync += async (_, ea) =>

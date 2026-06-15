@@ -20,8 +20,8 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
-builder.Services.AddSingleton(connectionProvider);
+builder.Services.AddSingleton(new RabbitMqConnectionProvider("localhost"));
+
 // worker
 // writes to outbox
 builder.Services.AddHostedService<OrderProducerWorker>();
