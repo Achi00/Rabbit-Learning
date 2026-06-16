@@ -4,6 +4,6 @@ namespace RabbitMQ.Application.Services.Interfaces.Messages
 {
     public interface IMessageHandler
     {
-        Task HandleAsync(JsonElement payloadm, Guid messageId);
+        Task HandleAsync(JsonElement payload, Guid messageId);
     }
 }
