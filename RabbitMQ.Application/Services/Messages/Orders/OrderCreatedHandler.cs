@@ -38,32 +38,20 @@ namespace RabbitMQ.Application.Services.Messages.Orders
                 return;
             }
             var order = payload.Deserialize<Order>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
+         
+            await _context.Orders.AddAsync(new Order 
+            { 
+                Id = order.Id,
+                Amount = order.Amount,
+                CustomerEmail = order.CustomerEmail
+            });
 
-            // begin transaction
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            // record for idempotency
+            _idempotency.MarkAsProcessed(messageId, "OrderCreated");
 
-            try
-            {
-                await _context.Orders.AddAsync(new Order 
-                { 
-                    Id = order.Id,
-                    Amount = order.Amount,
-                    CustomerEmail = order.CustomerEmail
-                });
+            await _context.SaveChangesAsync();
 
-                // record for idempotency
-                _idempotency.MarkAsProcessed(messageId, "OrderCreated");
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("Order {OrderId}", order.Id);
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            _logger.LogInformation("Order {OrderId} Created", order.Id);
         }
     }
 }

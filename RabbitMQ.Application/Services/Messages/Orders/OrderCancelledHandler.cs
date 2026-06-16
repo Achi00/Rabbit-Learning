@@ -13,14 +13,15 @@ namespace RabbitMQ.Application.Services.Messages.Orders
     {
         private readonly IOrderCancelProcessor _orderCancelProcessor;
         // in memory idempotency check
-        private readonly InMemoryIdempotencyService _idempotency;
+        //private readonly InMemoryIdempotencyService _idempotency;
+        private readonly DbIdempotencyService _idempotency;
         // db idempotency check
         private readonly MessageDbContext _context;
         private readonly ILogger<OrderCancelledHandler> _logger;
 
         public OrderCancelledHandler(
             IOrderCancelProcessor orderCancelProcessor,
-            InMemoryIdempotencyService idempotency,
+            DbIdempotencyService idempotency,
             ILogger<OrderCancelledHandler> logger,
             MessageDbContext context
         )
@@ -32,7 +33,7 @@ namespace RabbitMQ.Application.Services.Messages.Orders
         }
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
-            if (_idempotency.IsDuplicate(messageId))
+            if (await _idempotency.IsDuplicateAsync(messageId))
             {
                 _logger.LogWarning("Duplicater message {MessageId}", messageId);
                 return;
@@ -40,9 +41,14 @@ namespace RabbitMQ.Application.Services.Messages.Orders
             var order = payload.Deserialize<Order>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
 
             _logger.LogInformation("Cancelling order {OrderId} for {Email}", order.Id, order.CustomerEmail);
+            
             await _orderCancelProcessor.CancelOrderAsync(order);
 
-            _idempotency.MarkAsProcessed(messageId);
+            _idempotency.MarkAsProcessed(messageId, "OrderCancelled");
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Order {OrderId} Cancelled", order.Id);
         }
     }
 }
