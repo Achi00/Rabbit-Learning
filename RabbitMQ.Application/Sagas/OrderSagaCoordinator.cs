@@ -19,10 +19,15 @@ namespace RabbitMQ.Application.Sagas
 
         // stock sagas
         // success
+        // stock reservation succeeded, we call next step, charge payment command
         public async Task OnStockReservedAsync(StockReservedEvent evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+
+            var order = await _context.Orders.FindAsync(evt.OrderId)
+                ?? throw new InvalidOperationException($"Order {evt.OrderId} not found");
+
             saga.CurrentStep = SagaStep.StockReserved;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -30,8 +35,8 @@ namespace RabbitMQ.Application.Sagas
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ChargePayment,
-                // dummy data for testing
-                Payload = JsonSerializer.Serialize(new ReserveStockCommand(evt.SagaId, evt.OrderId)),
+                // pass next step
+                Payload = JsonSerializer.Serialize(new ChargePaymentCommand(evt.SagaId, evt.OrderId, order.Amount, order.CustomerEmail)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
@@ -40,6 +45,7 @@ namespace RabbitMQ.Application.Sagas
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+
             // saga ends here, nothing to undo
             saga.CurrentStep = SagaStep.Cancelled;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
@@ -53,22 +59,20 @@ namespace RabbitMQ.Application.Sagas
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
-            saga.CurrentStep = SagaStep.Compensating;
+
+            // final state
+            saga.CurrentStep = SagaStep.Completed;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
-            await _context.OutboxMessages.AddAsync(new OutboxMessage
-            {
-                Id = Guid.NewGuid(),
-                MessageType = MessageTypes.ChargePayment,
-                Payload = JsonSerializer.Serialize(new ChargePaymentCommand(evt.SagaId, evt.OrderId, 1000, "Test@email.com")),
-                CreatedAt = DateTimeOffset.UtcNow
-            });
+            // no outbox message, nothing left to do
         }
         // failure
+        // payment failed, we call step before, releasing stock
         public async Task OnPaymentFailedAsync(PaymentFailedEvent evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+
             saga.CurrentStep = SagaStep.Compensating;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
