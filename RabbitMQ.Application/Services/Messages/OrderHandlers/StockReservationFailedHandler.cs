@@ -11,12 +11,21 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
 
+        public StockReservationFailedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+        {
+            _coordinator = coordinator;
+            _idempotency = idempotency;
+        }
+
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
-            if (await _idempotency.IsDuplicateAsync(messageId)) return;
+            if (await _idempotency.IsDuplicateAsync(messageId))
+            {
+                return;
+            }
 
             var evt = payload.Deserialize<StockReservationFailedEvent>()!;
-            await _coordinator.OnStockReservedAsync(evt);
+            await _coordinator.OnStockReservationFailedAsync(evt);
 
             _idempotency.MarkAsProcessed(messageId, "StockReservationFailed");
             await _coordinator.SaveAsync();

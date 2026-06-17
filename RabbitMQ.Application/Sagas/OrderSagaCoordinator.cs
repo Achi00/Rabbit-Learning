@@ -42,6 +42,21 @@ namespace RabbitMQ.Application.Sagas
             });
         }
 
+        public async Task OnStockReservationFailedAsync(StockReservationFailedEvent evt)
+        {
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId);
+            saga.CurrentStep = SagaStep.Compensating;
+            saga.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _context.OutboxMessages.AddAsync(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                MessageType = "StockReservationFailed",
+                Payload = JsonSerializer.Serialize(new ReleaseStockCommand(evt.SagaId, evt.OrderId)),
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        }
+
 
         public Task SaveAsync() => _context.SaveChangesAsync();
     }

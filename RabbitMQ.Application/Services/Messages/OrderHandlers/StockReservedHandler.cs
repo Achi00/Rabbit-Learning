@@ -19,7 +19,10 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
 
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
-            if (await _idempotency.IsDuplicateAsync(messageId)) return;
+            if (await _idempotency.IsDuplicateAsync(messageId))
+            {
+                return;
+            }
 
             var evt = payload.Deserialize<StockReservedEvent>()!;
             await _coordinator.OnStockReservedAsync(evt);

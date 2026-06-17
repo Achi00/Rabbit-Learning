@@ -15,6 +15,12 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
         private readonly MessageDbContext _context;
         private readonly DbIdempotencyService _idempotency;
 
+        public InventoryHandler(MessageDbContext context, DbIdempotencyService idempotency)
+        {
+            _context = context;
+            _idempotency = idempotency;
+        }
+
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
             if (await _idempotency.IsDuplicateAsync(messageId))
@@ -33,11 +39,23 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
             // saga stock reserved if success = true
             if (success)
             {
-                outboxMessage = new OutboxMessage { MessageType = MessageTypes.StockReserved.ToString(), Payload = JsonSerializer.Serialize(new StockReservedEvent(command!.SagaId, command.OrderId))};
+                outboxMessage = new OutboxMessage 
+                { 
+                    Id = Guid.NewGuid(),
+                    MessageType = MessageTypes.StockReserved.ToString(), 
+                    Payload = JsonSerializer.Serialize(new StockReservedEvent(command!.SagaId, command.OrderId)),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                };
             }
             else
             {
-                outboxMessage = new OutboxMessage { MessageType = MessageTypes.StockReservationFailed.ToString(), Payload = JsonSerializer.Serialize(new StockReservationFailedEvent(command!.SagaId, command.OrderId, "Out of stock")) };
+                outboxMessage = new OutboxMessage 
+                {
+                    Id = Guid.NewGuid(),
+                    MessageType = MessageTypes.StockReservationFailed.ToString(), 
+                    Payload = JsonSerializer.Serialize(new StockReservationFailedEvent(command!.SagaId, command.OrderId, "Out of stock")) ,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                };
             }
 
             await _context.OutboxMessages.AddAsync(outboxMessage);
