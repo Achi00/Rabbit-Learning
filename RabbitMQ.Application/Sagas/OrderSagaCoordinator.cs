@@ -21,7 +21,8 @@ namespace RabbitMQ.Application.Sagas
         // success
         public async Task OnStockReservedAsync(StockReservedEvent evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId);
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
+                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
             saga.CurrentStep = SagaStep.StockReserved;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -37,7 +38,8 @@ namespace RabbitMQ.Application.Sagas
         // failure
         public async Task OnStockReservationFailedAsync(StockReservationFailedEvent evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId);
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
+                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
             // saga ends here, nothing to undo
             saga.CurrentStep = SagaStep.Cancelled;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
@@ -49,7 +51,8 @@ namespace RabbitMQ.Application.Sagas
         // success
         public async Task OnPaymentChargedAsync(PaymentChargedEvent evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId);
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
+                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
             saga.CurrentStep = SagaStep.Compensating;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -64,7 +67,8 @@ namespace RabbitMQ.Application.Sagas
         // failure
         public async Task OnPaymentFailedAsync(PaymentFailedEvent evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId);
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
+                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
             saga.CurrentStep = SagaStep.Compensating;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
