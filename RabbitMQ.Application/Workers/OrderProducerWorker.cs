@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Infrastructure;
@@ -45,7 +46,7 @@ namespace RabbitMQ.Application.Workers
                     var outboxMessage = new OutboxMessage
                     {
                         Id = Guid.NewGuid(),
-                        MessageType = MessageTypes.OrderCreated.ToString(),
+                        MessageType = MessageTypes.OrderCreated,
                         Payload = JsonSerializer.Serialize(order),
                         CreatedAt = DateTimeOffset.UtcNow,
                         SentAt = null

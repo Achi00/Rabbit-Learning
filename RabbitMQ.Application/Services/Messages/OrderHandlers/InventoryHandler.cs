@@ -1,4 +1,5 @@
-﻿using RabbitMq.Contracts.Commands;
+﻿using RabbitMq.Contracts;
+using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
@@ -42,7 +43,7 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
                 outboxMessage = new OutboxMessage 
                 { 
                     Id = Guid.NewGuid(),
-                    MessageType = MessageTypes.StockReserved.ToString(), 
+                    MessageType = MessageTypes.StockReserved, 
                     Payload = JsonSerializer.Serialize(new StockReservedEvent(command!.SagaId, command.OrderId)),
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
@@ -52,7 +53,7 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
                 outboxMessage = new OutboxMessage 
                 {
                     Id = Guid.NewGuid(),
-                    MessageType = MessageTypes.StockReservationFailed.ToString(), 
+                    MessageType = MessageTypes.StockReservationFailed, 
                     Payload = JsonSerializer.Serialize(new StockReservationFailedEvent(command!.SagaId, command.OrderId, "Out of stock")) ,
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
