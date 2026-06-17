@@ -11,6 +11,12 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
 
+        public StockReservedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+        {
+            _coordinator = coordinator;
+            _idempotency = idempotency;
+        }
+
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
             if (await _idempotency.IsDuplicateAsync(messageId)) return;
