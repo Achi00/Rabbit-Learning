@@ -1,6 +1,7 @@
 ﻿using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
@@ -32,11 +33,11 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
             // saga stock reserved if success = true
             if (success)
             {
-                outboxMessage = new OutboxMessage { MessageType = "StockReserved", Payload = JsonSerializer.Serialize(new StockReservedEvent(command!.SagaId, command.OrderId))};
+                outboxMessage = new OutboxMessage { MessageType = MessageTypes.StockReserved.ToString(), Payload = JsonSerializer.Serialize(new StockReservedEvent(command!.SagaId, command.OrderId))};
             }
             else
             {
-                outboxMessage = new OutboxMessage { MessageType = "StockReservationFailed", Payload = JsonSerializer.Serialize(new StockReservationFailedEvent(command!.SagaId, command.OrderId, "Out of stock")) };
+                outboxMessage = new OutboxMessage { MessageType = MessageTypes.StockReservationFailed.ToString(), Payload = JsonSerializer.Serialize(new StockReservationFailedEvent(command!.SagaId, command.OrderId, "Out of stock")) };
             }
 
             await _context.OutboxMessages.AddAsync(outboxMessage);

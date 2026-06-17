@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
@@ -47,7 +48,7 @@ namespace RabbitMQ.Application.Services.Messages.Orders
             });
 
             // record for idempotency
-            _idempotency.MarkAsProcessed(messageId, "OrderCreated");
+            _idempotency.MarkAsProcessed(messageId, MessageTypes.OrderCreated.ToString());
 
             await _context.SaveChangesAsync();
 
