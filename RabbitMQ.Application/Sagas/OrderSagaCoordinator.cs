@@ -48,13 +48,7 @@ namespace RabbitMQ.Application.Sagas
             saga.CurrentStep = SagaStep.Compensating;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
-            await _context.OutboxMessages.AddAsync(new OutboxMessage
-            {
-                Id = Guid.NewGuid(),
-                MessageType = "StockReservationFailed",
-                Payload = JsonSerializer.Serialize(new ReleaseStockCommand(evt.SagaId, evt.OrderId)),
-                CreatedAt = DateTimeOffset.UtcNow
-            });
+            // no outbox, because nothing succeeded
         }
 
 
