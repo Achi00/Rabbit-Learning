@@ -53,6 +53,18 @@ namespace RabbitMQ.Application.Sagas
             // no outbox, because nothing succeeded
         }
 
+        // release stock
+        public async Task OnStockReleasedAsync(StockReleasedEvent evt)
+        {
+            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
+                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+
+            // saga ends here, compensation confirmed
+            saga.CurrentStep = SagaStep.Cancelled; 
+            saga.UpdatedAt = DateTimeOffset.UtcNow;
+            // no outbox
+        }
+
         // payment sagas
         // success
         public async Task OnPaymentChargedAsync(PaymentChargedEvent evt)
