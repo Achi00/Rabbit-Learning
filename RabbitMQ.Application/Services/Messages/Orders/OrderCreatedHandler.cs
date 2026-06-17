@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMq.Contracts;
 using RabbitMq.Domain.Entity;
-using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
