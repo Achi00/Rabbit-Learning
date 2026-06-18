@@ -8,7 +8,7 @@ using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Services.Messages.Inventory
+namespace RabbitMQ.Application.Handlers.InventoryHandlers
 {
     public class InventoryHandler : IMessageHandler
     {
@@ -32,7 +32,7 @@ namespace RabbitMQ.Application.Services.Messages.Inventory
             // commands to controll certain operation, in this case reserving inventory stock if random value is successful
             var command = payload.Deserialize<ReserveStockCommand>();
 
-            // simulate 70% success rate
+            // simulate ~70% success rate
             var success = _random.Next(1, 10) > 3;
 
             OutboxMessage outboxMessage;

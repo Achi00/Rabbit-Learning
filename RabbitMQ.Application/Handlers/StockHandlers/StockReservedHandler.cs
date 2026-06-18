@@ -4,7 +4,7 @@ using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Services.Messages.OrderHandlers
+namespace RabbitMQ.Application.Handlers.StockHandlers
 {
     public class StockReservedHandler : IMessageHandler
     {

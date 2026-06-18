@@ -6,7 +6,7 @@ namespace RabbitMQ.Application.Services
 {
     public sealed class FakeOrderProcessor : IOrderCreateProcessor
     {
-        // 70% success 30% failure, to test different acknowledgement patterns
+        // ~70% success ~30% failure, to test different acknowledgement patterns
         private readonly Random _random = new Random();
         public async Task ProcessOrderAsync(Order order)
         {

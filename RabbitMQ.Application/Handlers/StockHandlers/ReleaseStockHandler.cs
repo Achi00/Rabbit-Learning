@@ -8,7 +8,7 @@ using RabbitMq.Domain.Entity;
 using System.Text.Json;
 using RabbitMq.Contracts;
 
-namespace RabbitMQ.Application.Services.Messages.OrderHandlers
+namespace RabbitMQ.Application.Handlers.StockHandlers
 {
     public class ReleaseStockHandler : IMessageHandler
     {

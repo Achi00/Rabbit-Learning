@@ -7,7 +7,7 @@ using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Services.Orders.OrderHandlers
+namespace RabbitMQ.Application.Handlers.PaymentHandlers
 {
     public class PaymentHandler : IMessageHandler
     {
@@ -31,7 +31,7 @@ namespace RabbitMQ.Application.Services.Orders.OrderHandlers
 
             var command = payload.Deserialize<ChargePaymentCommand>();
 
-            // randomize success by 70%
+            // randomize success by ~70%
             var success = _random.Next(1, 10) > 3;
 
             var outboxMessage = success
