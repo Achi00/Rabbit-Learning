@@ -5,14 +5,14 @@ using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Handlers.StockHandlers
+namespace RabbitMQ.Application.Handlers.PaymentHandlers
 {
-    public class StockReservedHandler : IMessageHandler
+    public class PaymentChargedHandler : IMessageHandler
     {
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
 
-        public StockReservedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+        public PaymentChargedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
         {
             _coordinator = coordinator;
             _idempotency = idempotency;
@@ -25,10 +25,11 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<StockReservedEvent>()!;
-            await _coordinator.OnStockReservedAsync(evt);
+            var evt = payload.Deserialize<PaymentChargedEvent>();
+            await _coordinator.OnPaymentChargedAsync(evt);
 
-            _idempotency.MarkAsProcessed(messageId, MessageTypes.StockReserved);
+            _idempotency.MarkAsProcessed(messageId, MessageTypes.PaymentCharged);
+
             await _coordinator.SaveAsync();
         }
     }
