@@ -34,8 +34,7 @@ namespace RabbitMQ.Application.Infrastructure
             await channel.QueueDeclareAsync("orders.queue", durable: true, exclusive: false, autoDelete: false, arguments: queueArgs);
             await channel.QueueDeclareAsync("orders.dlq", durable: true, exclusive: false, autoDelete: false);
             await channel.QueueDeclareAsync("orders.poison", durable: true, exclusive: false, autoDelete: false);
-
-            await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "order.*");
+            
 
             foreach (var delay in new[] { 5_000, 30_000, 300_000 })
             {
@@ -47,6 +46,10 @@ namespace RabbitMQ.Application.Infrastructure
             };
                 await channel.QueueDeclareAsync($"orders.retry.{delay / 1000}s", durable: true, exclusive: false, autoDelete: false, arguments: retryArgs);
             }
+
+            // TODO: will be more compilatble with sega, will think better solution in future
+            await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "#");
+            //await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "orders.*");
 
             await channel.QueueBindAsync("orders.queue", "orders.exchange", routingKey: "orders");
             await channel.QueueBindAsync("orders.dlq", "orders.dlx", routingKey: string.Empty);

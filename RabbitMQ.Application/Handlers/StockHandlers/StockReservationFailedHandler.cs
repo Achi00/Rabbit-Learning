@@ -24,7 +24,9 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<StockReservationFailedEvent>()!;
+            var evt = payload.Deserialize<StockReservationFailedEvent>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReservationFailedEvent)}");
+
             await _coordinator.OnStockReservationFailedAsync(evt);
 
             _idempotency.MarkAsProcessed(messageId, "StockReservationFailed");

@@ -41,11 +41,14 @@ builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 builder.Services.AddScoped<OrderSagaCoordinator>();
 
 // worker handlers
+// passes command and tells what needs to happend, publishes result event
 builder.Services.AddKeyedScoped<IMessageHandler, InventoryHandler>(MessageTypes.ReserveStock);
 builder.Services.AddKeyedScoped<IMessageHandler, PaymentHandler>(MessageTypes.ChargePayment);
 builder.Services.AddKeyedScoped<IMessageHandler, ReleaseStockHandler>(MessageTypes.ReleaseStock);
 
 // relay handlers
+// passes event and tells what already happend, forwards to coordinator
+// naming in past tense: Reserved, Failed, Released...
 builder.Services.AddKeyedScoped<IMessageHandler, StockReservedHandler>(MessageTypes.StockReserved);
 builder.Services.AddKeyedScoped<IMessageHandler, StockReservationFailedHandler>(MessageTypes.StockReservationFailed);
 builder.Services.AddKeyedScoped<IMessageHandler, PaymentChargedHandler>(MessageTypes.PaymentCharged);
