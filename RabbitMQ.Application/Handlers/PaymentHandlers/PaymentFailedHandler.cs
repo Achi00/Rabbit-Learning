@@ -24,7 +24,8 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;   
             }
 
-            var evt = payload.Deserialize<PaymentFailedEvent>();
+            var evt = payload.Deserialize<PaymentFailedEvent>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentFailedEvent)}");
 
             await _coordinator.OnPaymentFailedAsync(evt);
 

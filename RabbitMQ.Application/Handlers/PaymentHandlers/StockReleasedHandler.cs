@@ -7,17 +7,16 @@ using System.Text.Json;
 
 namespace RabbitMQ.Application.Handlers.PaymentHandlers
 {
-    public class PaymentChargedHandler : IMessageHandler
+    public class StockReleasedHandler : IMessageHandler
     {
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
 
-        public PaymentChargedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+        public StockReleasedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
         {
             _coordinator = coordinator;
             _idempotency = idempotency;
         }
-
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
             if (await _idempotency.IsDuplicateAsync(messageId))
@@ -25,13 +24,12 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<PaymentChargedEvent>()
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentChargedEvent)}");
-            await _coordinator.OnPaymentChargedAsync(evt);
+            var evt = payload.Deserialize<StockReleasedEvent>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReleasedEvent)}");
 
-            _idempotency.MarkAsProcessed(messageId, MessageTypes.PaymentCharged);
+            await _coordinator.OnStockReleasedAsync(evt);
 
-            await _coordinator.SaveAsync();
+            _idempotency.MarkAsProcessed(messageId, MessageTypes.StockReleased);
         }
     }
 }

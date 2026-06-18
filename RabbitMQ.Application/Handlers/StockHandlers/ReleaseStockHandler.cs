@@ -35,7 +35,7 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
             await _context.OutboxMessages.AddAsync(new OutboxMessage
             {
                 Id = Guid.NewGuid(),
-                MessageType = MessageTypes.ReleaseStock,
+                MessageType = MessageTypes.StockReleased,
                 Payload = JsonSerializer.Serialize(new StockReleasedEvent(command.SagaId, command.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
