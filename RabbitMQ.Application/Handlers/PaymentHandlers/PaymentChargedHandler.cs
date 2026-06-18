@@ -27,6 +27,7 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
 
             var evt = payload.Deserialize<PaymentChargedEvent>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentChargedEvent)}");
+
             await _coordinator.OnPaymentChargedAsync(evt);
 
             _idempotency.MarkAsProcessed(messageId, MessageTypes.PaymentCharged);

@@ -25,7 +25,9 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<StockReservedEvent>()!;
+            var evt = payload.Deserialize<StockReservedEvent>() 
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReservedEvent)}");
+
             await _coordinator.OnStockReservedAsync(evt);
 
             _idempotency.MarkAsProcessed(messageId, MessageTypes.StockReserved);
