@@ -30,7 +30,9 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
                 return;
             }
 
-            var command = payload.Deserialize<ReleaseStockCommand>();
+            var command = payload.Deserialize<ReleaseStockCommand>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReleaseStockCommand)} from payload.");
+
 
             await _context.OutboxMessages.AddAsync(new OutboxMessage
             {

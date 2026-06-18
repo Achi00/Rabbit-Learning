@@ -29,7 +29,8 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;
             }
 
-            var command = payload.Deserialize<ChargePaymentCommand>();
+            var command = payload.Deserialize<ChargePaymentCommand>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ChargePaymentCommand)} from payload.");
 
             // randomize success by ~70%
             var success = _random.Next(1, 10) > 3;

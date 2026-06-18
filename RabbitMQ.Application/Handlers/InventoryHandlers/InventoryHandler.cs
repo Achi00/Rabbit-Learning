@@ -30,7 +30,8 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
             }
 
             // commands to controll certain operation, in this case reserving inventory stock if random value is successful
-            var command = payload.Deserialize<ReserveStockCommand>();
+            var command = payload.Deserialize<ReserveStockCommand>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReserveStockCommand)} from payload.");
 
             // simulate ~70% success rate
             var success = _random.Next(1, 10) > 3;
