@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMq.Contracts;
 using RabbitMQ.Application.Infrastructure;
-using RabbitMQ.Application.Interfaces.Messages;
+using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
@@ -26,10 +26,10 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
 });
 
 //var connectionProvider = await RabbitMqConnectionProvider.CreateAsync("localhost");
-
+builder.Services.AddScoped<OrderSagaCoordinator>();
 // not connected at construct time, only when it is first used
 builder.Services.AddSingleton(new RabbitMqConnectionProvider("localhost"));
-
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
 // Workers
 builder.Services.AddHostedService<TopologySetup>();
 builder.Services.AddHostedService<OrderConsumerWorker>();
