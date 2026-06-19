@@ -37,9 +37,6 @@ builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
 
-// Type handlers
-builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
-builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>(MessageTypes.OrderCancelled);
 
 // Services
 //builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();

@@ -47,6 +47,8 @@ namespace RabbitMQ.Application.Services.Messages.Orders
             _idempotency.MarkAsProcessed(messageId, MessageTypes.OrderCreated);
 
             _logger.LogInformation("Order {OrderId} Created", evt.OrderId);
+
+            await _coordinator.SaveAsync();
         }
     }
 }

@@ -12,8 +12,8 @@ using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages;
 using RabbitMQ.Application.Services.Messages.OrderHandlers;
+using RabbitMQ.Application.Services.Messages.Orders;
 using RabbitMQ.Application.Workers;
-using RabbitMQ.Client;
 using RabbitMqDemo.Persistance.Context;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -42,6 +42,8 @@ builder.Services.AddScoped<OrderSagaCoordinator>();
 
 // worker handlers
 // passes command and tells what needs to happend, publishes result event
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>(MessageTypes.OrderCancelled);
 builder.Services.AddKeyedScoped<IMessageHandler, InventoryHandler>(MessageTypes.ReserveStock);
 builder.Services.AddKeyedScoped<IMessageHandler, PaymentHandler>(MessageTypes.ChargePayment);
 builder.Services.AddKeyedScoped<IMessageHandler, ReleaseStockHandler>(MessageTypes.ReleaseStock);
