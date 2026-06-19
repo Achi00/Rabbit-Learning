@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RabbitMq.Contracts;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMQ.Application.Services;
@@ -35,9 +36,10 @@ builder.Services.AddHostedService<OrderConsumerWorker>();
 builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
+
 // Type handlers
-//builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>("OrderCreated");
-//builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>("OrderCancelled");
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>(MessageTypes.OrderCancelled);
 
 // Services
 //builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();

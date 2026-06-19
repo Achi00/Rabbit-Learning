@@ -1,8 +1,10 @@
-﻿using RabbitMq.Contracts;
+﻿using Microsoft.EntityFrameworkCore;
+using RabbitMq.Contracts;
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
+using RabbitMQ.Application.Models;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
@@ -16,6 +18,18 @@ namespace RabbitMQ.Application.Sagas
         {
             _context = context;
         }
+
+        public async Task OnOrderCreatedAsync(OrderCreatedEvent evt)
+        {
+            //var sagaState = new OrderSagaState
+            //{
+            //    SagaId = evt.SagaId,
+            //    CurrentStep = SagaStep.Started,
+            //    CreatedAt = DateTimeOffset.UtcNow,
+            //    UpdatedAt = DateTimeOffset.UtcNow
+            //};
+        }
+
 
         // stock sagas
         // success

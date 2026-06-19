@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMq.Contracts;
+using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
+using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
@@ -11,19 +13,16 @@ namespace RabbitMQ.Application.Services.Messages.Orders
 {
     public class OrderCreatedHandler : IMessageHandler
     {
-        private readonly MessageDbContext _context;
-        private readonly IOrderCreateProcessor _orderProcessor;
+        private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
         private readonly ILogger<OrderCreatedHandler> _logger;
 
         public OrderCreatedHandler(
-            MessageDbContext context,
-            IOrderCreateProcessor orderProcessor,
+            OrderSagaCoordinator coordinator,
             DbIdempotencyService idempotency, 
             ILogger<OrderCreatedHandler> logger)
         {
-            _context = context;
-            _orderProcessor = orderProcessor;
+            _coordinator = coordinator;
             _idempotency = idempotency;
             _logger = logger;
         }
@@ -38,21 +37,16 @@ namespace RabbitMQ.Application.Services.Messages.Orders
                 // caller will ack this message, message should be handled at this poing
                 return;
             }
-            var order = payload.Deserialize<Order>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
-         
-            await _context.Orders.AddAsync(new Order 
-            { 
-                Id = order.Id,
-                Amount = order.Amount,
-                CustomerEmail = order.CustomerEmail
-            });
+
+            var evt = payload.Deserialize<OrderCreatedEvent>() 
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(OrderCreatedEvent)}");
+
+            await _coordinator.OnOrderCreatedAsync(evt);
 
             // record for idempotency
             _idempotency.MarkAsProcessed(messageId, MessageTypes.OrderCreated);
 
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Order {OrderId} Created", order.Id);
+            _logger.LogInformation("Order {OrderId} Created", evt.OrderId);
         }
     }
 }
