@@ -36,11 +36,13 @@ builder.Services.AddHostedService<RetryWorker>();
 builder.Services.AddHostedService<PoisonMessageWorker>();
 builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
 // Type handlers
-builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>("OrderCreated");
-builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>("OrderCancelled");
+//builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>("OrderCreated");
+//builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>("OrderCancelled");
+
 // Services
-builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
-builder.Services.AddScoped<IOrderCancelProcessor, FakeOrderCancelProcessor>();
+//builder.Services.AddScoped<IOrderCreateProcessor, FakeOrderProcessor>();
+//builder.Services.AddScoped<IOrderCancelProcessor, FakeOrderCancelProcessor>();
+
 // Idempotancy service
 builder.Services.AddScoped<DbIdempotencyService>();
 
