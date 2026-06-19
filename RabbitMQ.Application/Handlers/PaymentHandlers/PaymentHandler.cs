@@ -1,4 +1,5 @@
-﻿using RabbitMq.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts;
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
@@ -14,15 +15,18 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
         private readonly Random _random = new Random();
         private readonly MessageDbContext _context;
         private readonly DbIdempotencyService _idempotency;
+        private readonly ILogger<PaymentHandler> _logger;
 
-        public PaymentHandler(MessageDbContext context, DbIdempotencyService idempotency)
+        public PaymentHandler(MessageDbContext context, DbIdempotencyService idempotency, ILogger<PaymentHandler> logger)
         {
             _context = context;
             _idempotency = idempotency;
+            _logger = logger;
         }
 
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
+
             // idempotency check, see if message id was already seen
             if (await _idempotency.IsDuplicateAsync(messageId))
             {
@@ -31,6 +35,8 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
 
             var command = payload.Deserialize<ChargePaymentCommand>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ChargePaymentCommand)} from payload.");
+
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(PaymentHandler), command.SagaId);
 
             // randomize success by ~70%
             var success = _random.Next(1, 10) > 3;

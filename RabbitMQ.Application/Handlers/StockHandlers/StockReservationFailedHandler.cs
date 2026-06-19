@@ -1,4 +1,5 @@
-﻿using RabbitMq.Contracts.Events;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts.Events;
 using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
@@ -10,11 +11,13 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
     {
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
+        private readonly ILogger<StockReservationFailedHandler> _logger;
 
-        public StockReservationFailedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+        public StockReservationFailedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency, ILogger<StockReservationFailedHandler> logger)
         {
             _coordinator = coordinator;
             _idempotency = idempotency;
+            _logger = logger;
         }
 
         public async Task HandleAsync(JsonElement payload, Guid messageId)
@@ -26,6 +29,9 @@ namespace RabbitMQ.Application.Services.Messages.OrderHandlers
 
             var evt = payload.Deserialize<StockReservationFailedEvent>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReservationFailedEvent)}");
+
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(StockReservationFailedHandler), evt.SagaId);
+
 
             await _coordinator.OnStockReservationFailedAsync(evt);
 

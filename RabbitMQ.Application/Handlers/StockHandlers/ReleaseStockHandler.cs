@@ -1,12 +1,13 @@
-﻿using RabbitMq.Contracts.Commands;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts;
+using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
+using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
-using RabbitMq.Domain.Entity;
 using System.Text.Json;
-using RabbitMq.Contracts;
 
 namespace RabbitMQ.Application.Handlers.StockHandlers
 {
@@ -15,12 +16,14 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
         private readonly MessageDbContext _context;
+        private readonly ILogger<ReleaseStockHandler> _logger;
 
-        public ReleaseStockHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency, MessageDbContext context)
+        public ReleaseStockHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency, MessageDbContext context, ILogger<ReleaseStockHandler> logger)
         {
             _coordinator = coordinator;
             _idempotency = idempotency;
             _context = context;
+            _logger = logger;
         }
         public async Task HandleAsync(JsonElement payload, Guid messageId)
         {
@@ -32,6 +35,8 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
 
             var command = payload.Deserialize<ReleaseStockCommand>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReleaseStockCommand)} from payload.");
+
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(ReleaseStockHandler), command.SagaId);
 
 
             await _context.OutboxMessages.AddAsync(new OutboxMessage

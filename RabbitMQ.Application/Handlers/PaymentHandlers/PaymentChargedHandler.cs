@@ -1,4 +1,5 @@
-﻿using RabbitMq.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts;
 using RabbitMq.Contracts.Events;
 using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Interfaces.Messages;
@@ -11,11 +12,14 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
     {
         private readonly OrderSagaCoordinator _coordinator;
         private readonly DbIdempotencyService _idempotency;
+        private readonly ILogger<PaymentChargedHandler> _logger;
 
-        public PaymentChargedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency)
+
+        public PaymentChargedHandler(OrderSagaCoordinator coordinator, DbIdempotencyService idempotency, ILogger<PaymentChargedHandler> logger)
         {
             _coordinator = coordinator;
             _idempotency = idempotency;
+            _logger = logger;
         }
 
         public async Task HandleAsync(JsonElement payload, Guid messageId)
@@ -27,6 +31,10 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
 
             var evt = payload.Deserialize<PaymentChargedEvent>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentChargedEvent)}");
+
+            // for testing
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(PaymentChargedHandler), evt.SagaId);
+
 
             await _coordinator.OnPaymentChargedAsync(evt);
 

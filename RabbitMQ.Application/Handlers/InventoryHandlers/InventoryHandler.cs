@@ -1,8 +1,9 @@
-﻿using RabbitMq.Contracts;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMq.Contracts;
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
-using RabbitMQ.Application.Enums;
+using RabbitMQ.Application.Handlers.PaymentHandlers;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
@@ -14,12 +15,15 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
     {
         private readonly Random _random = new Random();
         private readonly MessageDbContext _context;
-        private readonly DbIdempotencyService _idempotency;
+        private readonly DbIdempotencyService _idempotency; 
+        private readonly ILogger<InventoryHandler> _logger;
 
-        public InventoryHandler(MessageDbContext context, DbIdempotencyService idempotency)
+
+        public InventoryHandler(MessageDbContext context, DbIdempotencyService idempotency, ILogger<InventoryHandler> logger)
         {
             _context = context;
             _idempotency = idempotency;
+            _logger = logger;
         }
 
         public async Task HandleAsync(JsonElement payload, Guid messageId)
@@ -32,6 +36,9 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
             // commands to controll certain operation, in this case reserving inventory stock if random value is successful
             var command = payload.Deserialize<ReserveStockCommand>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReserveStockCommand)} from payload.");
+
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(InventoryHandler), command.SagaId);
+
 
             // simulate ~70% success rate
             var success = _random.Next(1, 10) > 3;
