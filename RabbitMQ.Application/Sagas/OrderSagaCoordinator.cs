@@ -19,15 +19,28 @@ namespace RabbitMQ.Application.Sagas
             _context = context;
         }
 
+        // saga starting point
         public async Task OnOrderCreatedAsync(OrderCreatedEvent evt)
         {
-            //var sagaState = new OrderSagaState
-            //{
-            //    SagaId = evt.SagaId,
-            //    CurrentStep = SagaStep.Started,
-            //    CreatedAt = DateTimeOffset.UtcNow,
-            //    UpdatedAt = DateTimeOffset.UtcNow
-            //};
+            var sagaId = Guid.NewGuid();
+
+            var sagaState = new OrderSagaState
+            {
+                SagaId = sagaId,
+                CurrentStep = SagaStep.Started,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            await _context.OrderSagaState.AddAsync(sagaState);
+
+            await _context.OutboxMessages.AddAsync(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                MessageType = MessageTypes.ReserveStock,
+                Payload = JsonSerializer.Serialize(new ReserveStockCommand(sagaId, evt.OrderId)),
+                CreatedAt = DateTimeOffset.UtcNow
+            });
         }
 
 
