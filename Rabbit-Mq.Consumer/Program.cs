@@ -3,6 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMq.Contracts;
+using RabbitMQ.Application.Handlers.InventoryHandlers;
+using RabbitMQ.Application.Handlers.PaymentHandlers;
+using RabbitMQ.Application.Handlers.StockHandlers;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services;
@@ -29,7 +32,12 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
 builder.Services.AddScoped<OrderSagaCoordinator>();
 // not connected at construct time, only when it is first used
 builder.Services.AddSingleton(new RabbitMqConnectionProvider("localhost"));
+
 builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
+builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>(MessageTypes.OrderCancelled);
+builder.Services.AddKeyedScoped<IMessageHandler, InventoryHandler>(MessageTypes.ReserveStock);
+builder.Services.AddKeyedScoped<IMessageHandler, PaymentHandler>(MessageTypes.ChargePayment);
+builder.Services.AddKeyedScoped<IMessageHandler, ReleaseStockHandler>(MessageTypes.ReleaseStock);
 // Workers
 builder.Services.AddHostedService<TopologySetup>();
 builder.Services.AddHostedService<OrderConsumerWorker>();
