@@ -2,17 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RabbitMq.Contracts;
-using RabbitMQ.Application.Handlers.InventoryHandlers;
-using RabbitMQ.Application.Handlers.PaymentHandlers;
-using RabbitMQ.Application.Handlers.StockHandlers;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Interfaces.Messages;
 using RabbitMQ.Application.Sagas;
-using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages;
-using RabbitMQ.Application.Services.Messages.OrderHandlers;
-using RabbitMQ.Application.Services.Messages.Orders;
 using RabbitMQ.Application.Workers;
 using RabbitMqDemo.Persistance.Context;
 

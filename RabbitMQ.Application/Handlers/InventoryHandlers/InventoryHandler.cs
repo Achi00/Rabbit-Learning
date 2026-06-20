@@ -3,7 +3,6 @@ using RabbitMq.Contracts;
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
-using RabbitMQ.Application.Handlers.PaymentHandlers;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;

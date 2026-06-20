@@ -9,7 +9,7 @@ using RabbitMQ.Application.Services.Messages.Idempotency;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
-namespace RabbitMQ.Application.Services.Messages.Orders
+namespace RabbitMQ.Application.Handlers.OrderHandlers
 {
     public class OrderCreatedHandler : IMessageHandler
     {
