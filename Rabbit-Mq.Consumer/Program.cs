@@ -12,6 +12,7 @@ using RabbitMQ.Application.Services;
 using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
+using RabbitMQ.Application.Services.Messages.OrderHandlers;
 using RabbitMQ.Application.Services.Messages.Orders;
 using RabbitMQ.Application.Workers;
 using RabbitMqDemo.Persistance.Context;
@@ -33,11 +34,21 @@ builder.Services.AddScoped<OrderSagaCoordinator>();
 // not connected at construct time, only when it is first used
 builder.Services.AddSingleton(new RabbitMqConnectionProvider("localhost"));
 
+// worker handlers
+// passes command and tells what needs to happend, publishes result event
 builder.Services.AddKeyedScoped<IMessageHandler, OrderCreatedHandler>(MessageTypes.OrderCreated);
 builder.Services.AddKeyedScoped<IMessageHandler, OrderCancelledHandler>(MessageTypes.OrderCancelled);
 builder.Services.AddKeyedScoped<IMessageHandler, InventoryHandler>(MessageTypes.ReserveStock);
 builder.Services.AddKeyedScoped<IMessageHandler, PaymentHandler>(MessageTypes.ChargePayment);
 builder.Services.AddKeyedScoped<IMessageHandler, ReleaseStockHandler>(MessageTypes.ReleaseStock);
+// relay handlers
+// passes event and tells what already happend, forwards to coordinator
+// naming in past tense: Reserved, Failed, Released...
+builder.Services.AddKeyedScoped<IMessageHandler, StockReservedHandler>(MessageTypes.StockReserved);
+builder.Services.AddKeyedScoped<IMessageHandler, StockReservationFailedHandler>(MessageTypes.StockReservationFailed);
+builder.Services.AddKeyedScoped<IMessageHandler, PaymentChargedHandler>(MessageTypes.PaymentCharged);
+builder.Services.AddKeyedScoped<IMessageHandler, PaymentFailedHandler>(MessageTypes.PaymentFailed);
+builder.Services.AddKeyedScoped<IMessageHandler, StockReleasedHandler>(MessageTypes.StockReleased);
 // Workers
 builder.Services.AddHostedService<TopologySetup>();
 builder.Services.AddHostedService<OrderConsumerWorker>();
