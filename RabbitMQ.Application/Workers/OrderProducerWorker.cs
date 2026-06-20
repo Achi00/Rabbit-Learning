@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMq.Contracts;
+using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
 using RabbitMQ.Application.Infrastructure;
@@ -43,11 +44,14 @@ namespace RabbitMQ.Application.Workers
                         CustomerEmail = "mail@gmail.com"
                     };
 
+                    // fixes naming missmatch from Order type field Id and OrderId in events
+                    var orderCreatedEvent = new OrderCreatedEvent(order.Id);
+
                     var outboxMessage = new OutboxMessage
                     {
                         Id = Guid.NewGuid(),
                         MessageType = MessageTypes.OrderCreated,
-                        Payload = JsonSerializer.Serialize(order),
+                        Payload = JsonSerializer.Serialize(orderCreatedEvent),
                         CreatedAt = DateTimeOffset.UtcNow,
                         SentAt = null
                     };
