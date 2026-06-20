@@ -31,8 +31,6 @@ builder.Services.AddHostedService<OutboxRelayWorker>();
 // outbox
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 
-builder.Services.AddScoped<OrderSagaCoordinator>();
-
 var host = builder.Build();
 
 await host.RunAsync();

@@ -1,12 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMq.Contracts;
 using RabbitMq.Contracts.Events;
-using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Sagas;
-using RabbitMQ.Application.Services.Interfaces;
 using RabbitMQ.Application.Services.Interfaces.Messages;
 using RabbitMQ.Application.Services.Messages.Idempotency;
-using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
 namespace RabbitMQ.Application.Handlers.OrderHandlers
