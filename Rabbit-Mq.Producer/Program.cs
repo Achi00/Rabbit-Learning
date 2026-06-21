@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Application.Infrastructure;
 using RabbitMQ.Application.Interfaces.Messages;
-using RabbitMQ.Application.Sagas;
 using RabbitMQ.Application.Services.Messages;
 using RabbitMQ.Application.Workers;
 using RabbitMqDemo.Persistance.Context;

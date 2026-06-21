@@ -28,43 +28,40 @@ namespace RabbitMQ.Application.Workers
         // move channle set up in RabbitMqPublisher service
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
-            var sent = false;
-
+            int i = 0;
             while (!ct.IsCancellationRequested)
             {
-                if (!sent)
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<MessageDbContext>();
+                
+                var order = new Order
                 {
-                    using var scope = _scopeFactory.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<MessageDbContext>();
+                    Id = Guid.NewGuid(),
+                    Amount = 100,
+                    CustomerEmail = $"mail{i}@gmail.com"
+                };
+                
+                // fixes naming missmatch from Order type field Id and OrderId in events
+                var orderCreatedEvent = new OrderCreatedEvent(order.Id);
+                
+                var outboxMessage = new OutboxMessage
+                {
+                    Id = Guid.NewGuid(),
+                    MessageType = MessageTypes.OrderCreated,
+                    Payload = JsonSerializer.Serialize(orderCreatedEvent),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    SentAt = null
+                };
+                
+                await db.Orders.AddAsync(order, ct);
+                await db.OutboxMessages.AddAsync(outboxMessage, ct);
+                // atomic, both or none!!!
+                await db.SaveChangesAsync(ct);
+                
+                _logger.LogInformation("Order {OrderId} written with outbox message {MessageId}", order.Id, outboxMessage.Id);
 
-                    var order = new Order
-                    {
-                        Id = Guid.NewGuid(),
-                        Amount = 100,
-                        CustomerEmail = "mail@gmail.com"
-                    };
+                i++;
 
-                    // fixes naming missmatch from Order type field Id and OrderId in events
-                    var orderCreatedEvent = new OrderCreatedEvent(order.Id);
-
-                    var outboxMessage = new OutboxMessage
-                    {
-                        Id = Guid.NewGuid(),
-                        MessageType = MessageTypes.OrderCreated,
-                        Payload = JsonSerializer.Serialize(orderCreatedEvent),
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        SentAt = null
-                    };
-
-                    await db.Orders.AddAsync(order, ct);
-                    await db.OutboxMessages.AddAsync(outboxMessage, ct);
-                    // atomic, both or none!!!
-                    await db.SaveChangesAsync(ct);
-
-                    _logger.LogInformation("Order {OrderId} written with outbox message {MessageId}", order.Id, outboxMessage.Id);
-
-                    sent = true;
-                }
                 await Task.Delay(1000, ct);
             }
         }
