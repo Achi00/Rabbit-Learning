@@ -42,7 +42,7 @@ namespace RabbitMQ.Application.Workers
                 };
                 
                 // fixes naming missmatch from Order type field Id and OrderId in events
-                var orderCreatedEvent = new OrderCreatedEvent(order.Id);
+                var orderCreatedEvent = new OrderSubmittedEvent(order.Id);
                 
                 var outboxMessage = new OutboxMessage
                 {

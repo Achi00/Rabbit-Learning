@@ -9,6 +9,7 @@
     <Project Path="RabbitMq.Domain/RabbitMq.Domain.csproj" Id="580a39fb-bac8-49b4-a093-b122bfcac439" />
   </Folder>
   <Folder Name="/Infrastructure/">
+    <Project Path="RabbitMq.Infrastructure/RabbitMq.Infrastructure.csproj" Id="1790f28b-1151-496a-8288-b311ab224d09" />
     <Project Path="RabbitMqDemo.Persistance/RabbitMqDemo.Persistance.csproj" Id="c43c3e3b-ec78-4b8a-b9e3-08ca145a7093" />
   </Folder>
   <Folder Name="/Server/">

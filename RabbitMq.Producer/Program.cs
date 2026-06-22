@@ -23,6 +23,7 @@ builder.Services.AddMassTransit(x =>
     {
         cfg.Host("localhost");
         // replaces my prev TopologySetup class
+        // scans DI container for registered IConsumer<T> and creates rabbitMq exchange with type name, queue, binds them
         cfg.ConfigureEndpoints(ctx);
     });
 });

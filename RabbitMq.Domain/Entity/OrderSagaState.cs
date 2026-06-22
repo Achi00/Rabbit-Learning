@@ -3,6 +3,7 @@ using RabbitMQ.Application.Enums;
 
 namespace RabbitMQ.Application.Models
 {
+    // old
     public class OrderSagaState
     {
         public Guid SagaId { get; set; }

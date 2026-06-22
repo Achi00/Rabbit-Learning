@@ -20,7 +20,7 @@ namespace RabbitMQ.Application.Sagas
         }
 
         // saga starting point
-        public async Task OnOrderCreatedAsync(OrderCreatedEvent evt)
+        public async Task OnOrderCreatedAsync(OrderSubmittedEvent evt)
         {
             var sagaId = Guid.NewGuid();
 

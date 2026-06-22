@@ -35,8 +35,8 @@ namespace RabbitMQ.Application.Handlers.OrderHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<OrderCreatedEvent>() 
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(OrderCreatedEvent)}");
+            var evt = payload.Deserialize<OrderSubmittedEvent>() 
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(OrderSubmittedEvent)}");
 
             await _coordinator.OnOrderCreatedAsync(evt);
 
