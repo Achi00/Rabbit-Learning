@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using RabbitMq.Infrastructure.Messaging.Consumers;
 using RabbitMq.Infrastructure.Messaging.Saga;
 using RabbitMQ.Application.Sagas;
@@ -34,6 +35,12 @@ builder.Services.AddMassTransit(x =>
         cfg.Host("localhost");
         cfg.ConfigureEndpoints(ctx);
     });
+});
+
+// add db context
+builder.Services.AddDbContext<MessageDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 var app = builder.Build();
