@@ -26,7 +26,7 @@ builder.Services.AddMassTransit(x =>
         .EntityFrameworkRepository(r =>
         {
             r.UseSqlServer();
-            r.AddDbContext<MessageDbContext>();
+            r.ExistingDbContext<MessageDbContext>();
         });
 
     x.UsingRabbitMq((ctx, cfg) =>
