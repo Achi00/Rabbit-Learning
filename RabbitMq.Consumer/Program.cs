@@ -1,33 +1,25 @@
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
+var builder = WebApplication.CreateBuilder(args);
 
-var factory = new ConnectionFactory { HostName = "localhost" };
-using var connection = await factory.CreateConnectionAsync();
+// Add services to the container.
 
-using var channel = await connection.CreateChannelAsync();
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-await channel.QueueDeclareAsync(queue: "email-queue", durable: true, exclusive: false, autoDelete: false, null);
-await channel.QueueDeclareAsync(queue: "sms-queue", durable: true, exclusive: false, autoDelete: false, null);
-await channel.QueueDeclareAsync(queue: "push-queue", durable: true, exclusive: false, autoDelete: false, null);
+var app = builder.Build();
 
-Console.WriteLine("Waiting messages");
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-var consumer = new AsyncEventingBasicConsumer(channel);
-consumer.ReceivedAsync += async (sender, eventArgs) => 
-{ 
-    var body = eventArgs.Body.ToArray();
-    var message = Encoding.UTF8.GetString(body);
+app.UseHttpsRedirection();
 
-    Console.WriteLine($"Received: {message}");
+app.UseAuthorization();
 
-    // ACK
-    await channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false);
-};
+app.MapControllers();
 
-// manual ackgnowladge messages
-//await channel.BasicConsumeAsync("email-queue", autoAck: false, consumer);
-await channel.BasicConsumeAsync("sms-queue", autoAck: false, consumer);
-//await channel.BasicConsumeAsync("push-queue", autoAck: false, consumer);
-
-Console.ReadLine();
+app.Run();
