@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 
 namespace RabbitMq.Infrastructure.Messaging.Saga
@@ -39,6 +40,40 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+
+            // Initially handles messages when saga is not created yet
+            // when order is subbmited update state to reserving stock
+            Initially(
+                When(OrderSubmitted)
+                    .Then(ctx =>
+                    {
+                        ctx.Saga.OrderId = ctx.Message.OrderId;
+                        ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
+                    })
+                    .Publish(ctx => new StockReservedEvent(ctx.Saga.CorrelationId, ctx.Message.OrderId))
+                    .TransitionTo(StockReserving)
+            );
+
+            // if stock reserver update state to payment charging
+            During(StockReserving,
+                When(StockReserved)
+                    .Publish(ctx => new ChargePaymentCommand(ctx.Saga.CorrelationId, ctx.Saga.OrderId, 10, "Email@gmail.com"))
+                    .TransitionTo(PaymentCharging),
+                // if stock reservation failled finalize instance
+                When(StockReservationFailed)
+                    .TransitionTo(Cancelled)
+                    .Finalize()
+            );
+            // if payment charged sucesfully, finalize instance, this is final state
+            During(PaymentCharging, 
+                When(PaymentCharged)
+                    .TransitionTo(Completed)
+                    .Finalize(),
+                // if payment failed release stock
+                When(PaymentFailed)
+                    .Publish(ctx => new ReleaseStockCommand(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
+                    .TransitionTo(Compensating)
+            );
         }
     }
 }
