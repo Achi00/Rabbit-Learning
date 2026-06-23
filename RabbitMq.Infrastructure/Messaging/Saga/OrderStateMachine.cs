@@ -74,6 +74,15 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Publish(ctx => new ReleaseStockCommand(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
                     .TransitionTo(Compensating)
             );
+            // if compensated succeeded finalize instance
+            During(Compensating,
+                When(StockReleased)
+                    .TransitionTo(Compensated)
+                    .Finalize()
+            );
+
+            // remove completed saga rows from db
+            SetCompletedWhenFinalized();
         }
     }
 }
