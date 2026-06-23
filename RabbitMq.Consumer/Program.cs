@@ -33,6 +33,20 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((ctx, cfg) =>
     {
         cfg.Host("localhost");
+
+        // not global configurations
+        cfg.ReceiveEndpoint("fulfillment-queue", e => 
+        {
+            e.UseMessageRetry(r => r.Exponential(
+                retryLimit: 3,
+                minInterval: TimeSpan.FromSeconds(5),
+                maxInterval: TimeSpan.FromSeconds(5),
+                intervalDelta: TimeSpan.FromSeconds(30)
+            ));
+
+            e.ConfigureConsumer<OrderSubmittedConsumer>(ctx);
+        });
+
         cfg.ConfigureEndpoints(ctx);
     });
 });
