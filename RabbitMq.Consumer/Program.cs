@@ -18,6 +18,11 @@ builder.Services.AddMassTransit(x =>
 {
     // register consumers
     // should implament IConsumer<T>
+    /*
+    * used in case we need standalone consumer logic or when something needs to react
+    * on same event independently, without saga,
+    * those consumers replaced my custom handlers and bg workers
+    */
     x.AddConsumer<OrderSubmittedConsumer>();
     //x.AddConsumer<ChargePaymentConsumer>();
     //x.AddConsumer<ReleaseStockConsumer>();
@@ -46,6 +51,12 @@ builder.Services.AddMassTransit(x =>
 
             e.ConfigureConsumer<OrderSubmittedConsumer>(ctx);
         });
+
+        // global configuration, TEST LATER
+        //cfg.UseMessageRetry(r => r.Exponential(3,
+        //TimeSpan.FromSeconds(5),
+        //TimeSpan.FromMinutes(5),
+        //TimeSpan.FromSeconds(30)));
 
         cfg.ConfigureEndpoints(ctx);
     });
