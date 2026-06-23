@@ -20,5 +20,25 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public Event<PaymentChargedEvent> PaymentCharged { get; private set; }
         public Event<PaymentFailedEvent> PaymentFailed { get; private set; }
         public Event<StockReleasedEvent> StockReleased { get; private set; }
+
+        protected OrderStateMachine()
+        {
+            // current state string
+            InstanceState(x => x.CurrentState);
+
+            // correlate incoming messages to correct saga instance
+            Event(() => OrderSubmitted, x =>
+            {
+                x.CorrelateById(context => context.Message.OrderId);
+
+                x.SelectId(context => context.Message.OrderId);
+            });
+
+            Event(() => StockReserved, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => StockReservationFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+        }
     }
 }
