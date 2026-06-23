@@ -16,6 +16,8 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
 
         // events, each maps to message type
         public Event<OrderSubmittedEvent> OrderSubmitted { get; private set; }
+        public Event<OrderCompletedEvent> OrderCompleted { get; private set; }
+        public Event<OrderCancelledEvent> OrderCancelled { get; private set; }
         public Event<StockReservedEvent> StockReserved { get; private set; }
         public Event<StockReservationFailedEvent> StockReservationFailed { get; private set; }
         public Event<PaymentChargedEvent> PaymentCharged { get; private set; }
@@ -67,6 +69,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if payment charged sucesfully, finalize instance, this is final state
             During(PaymentCharging, 
                 When(PaymentCharged)
+                    .Publish(ctx => new OrderCompletedCommand(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
                     .TransitionTo(Completed)
                     .Finalize(),
                 // if payment failed release stock
@@ -77,6 +80,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if compensated succeeded finalize instance
             During(Compensating,
                 When(StockReleased)
+                    .Publish(ctx => new OrderCancelledCommand(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
                     .TransitionTo(Compensated)
                     .Finalize()
             );

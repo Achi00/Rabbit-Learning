@@ -1,5 +1,5 @@
 ﻿namespace RabbitMq.Contracts.Events
 {
-    public record OrderCompleted(Guid OrderId, string CustomerEmail);
+    public record OrderCompletedEvent(Guid OrderId, string CustomerEmail);
 
 }
