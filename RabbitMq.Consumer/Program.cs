@@ -24,8 +24,7 @@ builder.Services.AddMassTransit(x =>
     * those consumers replaced my custom handlers and bg workers
     */
     x.AddConsumer<OrderSubmittedConsumer>();
-    //x.AddConsumer<ChargePaymentConsumer>();
-    //x.AddConsumer<ReleaseStockConsumer>();
+    x.AddConsumer<NotificationConsumer>();
 
     // register saga
     x.AddSagaStateMachine<OrderStateMachine, OrderSagaState>()

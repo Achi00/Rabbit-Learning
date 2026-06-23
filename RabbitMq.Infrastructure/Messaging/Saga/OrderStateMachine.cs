@@ -16,7 +16,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
 
         // events, each maps to message type
         public Event<OrderSubmittedEvent> OrderSubmitted { get; private set; }
-        public Event<OrderCompletedEvent> OrderCompleted { get; private set; }
+        public Event<OrderCancelledEvent> OrderCompleted { get; private set; }
         public Event<OrderCancelledEvent> OrderCancelled { get; private set; }
         public Event<StockReservedEvent> StockReserved { get; private set; }
         public Event<StockReservationFailedEvent> StockReservationFailed { get; private set; }
