@@ -33,8 +33,8 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;
             }
 
-            var command = payload.Deserialize<ChargePaymentCommand>()
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ChargePaymentCommand)} from payload.");
+            var command = payload.Deserialize<ChargePayment>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ChargePayment)} from payload.");
 
             _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(PaymentHandler), command.SagaId);
 
@@ -46,13 +46,13 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 {
                     Id = Guid.NewGuid(),
                     MessageType = MessageTypes.PaymentCharged,
-                    Payload = JsonSerializer.Serialize(new PaymentChargedEvent(command.SagaId, command.OrderId))
+                    Payload = JsonSerializer.Serialize(new PaymentCharged(command.SagaId, command.OrderId))
                 }
                 : new OutboxMessage
                 {
                     Id = Guid.NewGuid(),
                     MessageType = MessageTypes.PaymentFailed,
-                    Payload = JsonSerializer.Serialize(new PaymentFailedEvent(command.SagaId, command.OrderId, "Card Declined"))
+                    Payload = JsonSerializer.Serialize(new PaymentFailed(command.SagaId, command.OrderId, "Card Declined"))
                 };
 
             await _context.OutboxMessages.AddAsync(outboxMessage);

@@ -5,7 +5,7 @@ using RabbitMq.Contracts.Events;
 
 namespace RabbitMq.Infrastructure.Messaging.Consumers
 {
-    public class NotificationConsumer : IConsumer<OrderCompletedCommand>, IConsumer<OrderCancelledCommand>
+    public class NotificationConsumer : IConsumer<Contracts.Commands.OrderCompleted>, IConsumer<Contracts.Commands.OrderCancelled>
     {
         private readonly ILogger<NotificationConsumer> _logger;
 
@@ -13,7 +13,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
         {
             _logger = logger;
         }
-        public Task Consume(ConsumeContext<OrderCompletedCommand> context)
+        public Task Consume(ConsumeContext<Contracts.Commands.OrderCompleted> context)
         {
             _logger.LogInformation
             (
@@ -24,7 +24,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
 
             return Task.CompletedTask;
         }
-        public Task Consume(ConsumeContext<OrderCancelledCommand> context)
+        public Task Consume(ConsumeContext<Contracts.Commands.OrderCancelled> context)
         {
             _logger.LogInformation
             (

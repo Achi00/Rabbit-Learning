@@ -20,7 +20,7 @@ namespace RabbitMQ.Application.Sagas
         }
 
         // saga starting point
-        public async Task OnOrderCreatedAsync(OrderSubmittedEvent evt)
+        public async Task OnOrderCreatedAsync(OrderSubmitted evt)
         {
             var sagaId = Guid.NewGuid();
 
@@ -38,7 +38,7 @@ namespace RabbitMQ.Application.Sagas
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ReserveStock,
-                Payload = JsonSerializer.Serialize(new ReserveStockCommand(sagaId, evt.OrderId)),
+                Payload = JsonSerializer.Serialize(new ReserveStock(sagaId, evt.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
@@ -47,7 +47,7 @@ namespace RabbitMQ.Application.Sagas
         // stock sagas
         // success
         // stock reservation succeeded, we call next step, charge payment command
-        public async Task OnStockReservedAsync(StockReservedEvent evt)
+        public async Task OnStockReservedAsync(StockReserved evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
@@ -63,12 +63,12 @@ namespace RabbitMQ.Application.Sagas
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ChargePayment,
                 // pass next step
-                Payload = JsonSerializer.Serialize(new ChargePaymentCommand(evt.SagaId, evt.OrderId, order.Amount, order.CustomerEmail)),
+                Payload = JsonSerializer.Serialize(new ChargePayment(evt.SagaId, evt.OrderId, order.Amount, order.CustomerEmail)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
         // failure
-        public async Task OnStockReservationFailedAsync(StockReservationFailedEvent evt)
+        public async Task OnStockReservationFailedAsync(StockReservationFailed evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
@@ -81,7 +81,7 @@ namespace RabbitMQ.Application.Sagas
         }
 
         // release stock
-        public async Task OnStockReleasedAsync(StockReleasedEvent evt)
+        public async Task OnStockReleasedAsync(StockReleased evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
@@ -94,7 +94,7 @@ namespace RabbitMQ.Application.Sagas
 
         // payment sagas
         // success
-        public async Task OnPaymentChargedAsync(PaymentChargedEvent evt)
+        public async Task OnPaymentChargedAsync(PaymentCharged evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
@@ -107,7 +107,7 @@ namespace RabbitMQ.Application.Sagas
         }
         // failure
         // payment failed, we call step before, releasing stock
-        public async Task OnPaymentFailedAsync(PaymentFailedEvent evt)
+        public async Task OnPaymentFailedAsync(PaymentFailed evt)
         {
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
@@ -119,7 +119,7 @@ namespace RabbitMQ.Application.Sagas
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ReleaseStock,
-                Payload = JsonSerializer.Serialize(new ReleaseStockCommand(evt.SagaId, evt.OrderId)),
+                Payload = JsonSerializer.Serialize(new ReleaseStock(evt.SagaId, evt.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }

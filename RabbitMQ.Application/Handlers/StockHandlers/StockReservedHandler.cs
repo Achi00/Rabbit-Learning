@@ -28,8 +28,8 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<StockReservedEvent>() 
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReservedEvent)}");
+            var evt = payload.Deserialize<StockReserved>() 
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReserved)}");
 
             _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(StockReservedHandler), evt.SagaId);
 

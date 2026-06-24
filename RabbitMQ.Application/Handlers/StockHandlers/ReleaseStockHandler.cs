@@ -33,8 +33,8 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
                 return;
             }
 
-            var command = payload.Deserialize<ReleaseStockCommand>()
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReleaseStockCommand)} from payload.");
+            var command = payload.Deserialize<ReleaseStock>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReleaseStock)} from payload.");
 
             _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(ReleaseStockHandler), command.SagaId);
 
@@ -43,7 +43,7 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.StockReleased,
-                Payload = JsonSerializer.Serialize(new StockReleasedEvent(command.SagaId, command.OrderId)),
+                Payload = JsonSerializer.Serialize(new StockReleased(command.SagaId, command.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
 

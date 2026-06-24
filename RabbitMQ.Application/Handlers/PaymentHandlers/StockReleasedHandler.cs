@@ -27,10 +27,10 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<StockReleasedEvent>()
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReleasedEvent)}");
+            var evt = payload.Deserialize<StockReleased>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReleased)}");
 
-            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(StockReleasedEvent), evt.SagaId);
+            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(StockReleased), evt.SagaId);
 
             await _coordinator.OnStockReleasedAsync(evt);
 

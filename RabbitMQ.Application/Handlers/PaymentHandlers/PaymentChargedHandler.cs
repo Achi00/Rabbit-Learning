@@ -29,8 +29,8 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 return;
             }
 
-            var evt = payload.Deserialize<PaymentChargedEvent>()
-                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentChargedEvent)}");
+            var evt = payload.Deserialize<PaymentCharged>()
+                ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentCharged)}");
 
             // for testing
             _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(PaymentChargedHandler), evt.SagaId);
