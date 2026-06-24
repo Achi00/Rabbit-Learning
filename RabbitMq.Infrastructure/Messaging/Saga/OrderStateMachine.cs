@@ -4,6 +4,10 @@ using RabbitMq.Contracts.Events;
 
 namespace RabbitMq.Infrastructure.Messaging.Saga
 {
+    /*
+     * Changing sata state and ef core interaction happends on initialization after calling methon Then()
+     * after TransitionTo, ef core should match correlaton id to saga id
+     */
     public class OrderStateMachine : MassTransitStateMachine<OrderSagaState>
     {
         // this states replace old enum SagaStep
@@ -53,6 +57,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     {
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
+                        ctx.Saga.ConsumerEmail = ctx.Message.ConsumerEmail;
                     })
                     // publishes to broker
                     .Publish(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
@@ -69,14 +74,14 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                 When(StockReservationFailed)
                     .TransitionTo(Cancelled)
                     // finalize removes row???
-                    .Finalize()
+                    //.Finalize()
             );
             // if payment charged sucesfully, finalize instance, this is final state
             During(PaymentCharging, 
                 When(PaymentCharged)
                     .Publish(ctx => new OrderCompleted(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
-                    .TransitionTo(Completed)
-                    .Finalize(),
+                    .TransitionTo(Completed),
+                    //.Finalize(),
                 // if payment failed release stock
                 When(PaymentFailed)
                     .Publish(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
@@ -87,7 +92,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                 When(StockReleased)
                     .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
                     .TransitionTo(Compensated)
-                    .Finalize()
+                    //.Finalize()
             );
 
             // remove completed saga rows from db
