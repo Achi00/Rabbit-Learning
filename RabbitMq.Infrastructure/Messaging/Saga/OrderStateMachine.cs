@@ -24,7 +24,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public Event<PaymentFailed> PaymentFailed { get; private set; }
         public Event<StockReleased> StockReleased { get; private set; }
 
-        protected OrderStateMachine()
+        public OrderStateMachine()
         {
             // current state string
             InstanceState(x => x.CurrentState);
@@ -37,6 +37,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                 x.SelectId(context => context.Message.OrderId);
             });
 
+            // after every new arrivel masstransit reads correlation and should load saga from db
             Event(() => StockReserved, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReservationFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.SagaId));
@@ -47,12 +48,15 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // when order is subbmited update state to reserving stock
             Initially(
                 When(OrderSubmitted)
+                    // this updates value which should go into OrderSagaStates table
                     .Then(ctx =>
                     {
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
                     })
+                    // publishes to broker
                     .Publish(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
+                    // after transitioning to StockReserving ef core should insert values and update state as StockReserving
                     .TransitionTo(StockReserving)
             );
 
@@ -64,6 +68,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
                     .TransitionTo(Cancelled)
+                    // finalize removes row???
                     .Finalize()
             );
             // if payment charged sucesfully, finalize instance, this is final state
@@ -86,7 +91,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             );
 
             // remove completed saga rows from db
-            SetCompletedWhenFinalized();
+            //SetCompletedWhenFinalized();
         }
     }
 }
