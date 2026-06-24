@@ -4,6 +4,7 @@ using RabbitMq.Contracts.Commands;
 
 namespace RabbitMq.Infrastructure.Messaging.Consumers
 {
+    // consumer gets events and acts based on what type it is, added as seperate AddConsumer in masstransit
     public class NotificationConsumer : IConsumer<OrderCompleted>, IConsumer<OrderCancelled>
     {
         private readonly ILogger<NotificationConsumer> _logger;

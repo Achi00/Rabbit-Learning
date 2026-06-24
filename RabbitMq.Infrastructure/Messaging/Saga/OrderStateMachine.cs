@@ -52,7 +52,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
                     })
-                    .Publish(ctx => new StockReserved(ctx.Saga.CorrelationId, ctx.Message.OrderId))
+                    .Publish(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
                     .TransitionTo(StockReserving)
             );
 
