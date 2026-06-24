@@ -57,6 +57,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     {
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
+                        ctx.Saga.Amount = ctx.Message.Amount;
                         ctx.Saga.ConsumerEmail = ctx.Message.ConsumerEmail;
                     })
                     // publishes to broker
@@ -68,7 +69,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if stock reserver update state to payment charging
             During(StockReserving,
                 When(StockReserved)
-                    .Publish(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, 10, "Email@gmail.com"))
+                    .Publish(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.ConsumerEmail))
                     .TransitionTo(PaymentCharging),
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
