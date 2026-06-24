@@ -1,11 +1,10 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using RabbitMq.Contracts.Commands;
-using RabbitMq.Contracts.Events;
 
 namespace RabbitMq.Infrastructure.Messaging.Consumers
 {
-    public class NotificationConsumer : IConsumer<Contracts.Commands.OrderCompleted>, IConsumer<Contracts.Commands.OrderCancelled>
+    public class NotificationConsumer : IConsumer<OrderCompleted>, IConsumer<OrderCancelled>
     {
         private readonly ILogger<NotificationConsumer> _logger;
 
@@ -13,7 +12,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
         {
             _logger = logger;
         }
-        public Task Consume(ConsumeContext<Contracts.Commands.OrderCompleted> context)
+        public Task Consume(ConsumeContext<OrderCompleted> context)
         {
             _logger.LogInformation
             (
@@ -24,7 +23,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
 
             return Task.CompletedTask;
         }
-        public Task Consume(ConsumeContext<Contracts.Commands.OrderCancelled> context)
+        public Task Consume(ConsumeContext<OrderCancelled> context)
         {
             _logger.LogInformation
             (
