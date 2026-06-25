@@ -24,6 +24,11 @@ builder.Services.AddMassTransit(x =>
     * those consumers replaced my custom handlers and bg workers
     * AddConsumer registers consumer in masstransit DI
     */
+
+    /*
+     * AddConsumer creates endpoint queue:reserve-stock which maps to RabbitMQ queue "reserve-stock"
+     * bounds to exchange reserve-stock
+     */
     x.AddConsumer<OrderSubmittedConsumer>();
     x.AddConsumer<NotificationConsumer>();
     x.AddConsumer<ReserveStockConsumer>();

@@ -66,7 +66,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                         ctx.Saga.ConsumerEmail = ctx.Message.ConsumerEmail;
                     })
                     // publishes to broker
-                    .Send(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
+                    .Publish(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
                     // after transitioning to StockReserving ef core should insert values and update state as StockReserving
                     .TransitionTo(StockReserving)
             );
@@ -75,11 +75,11 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             During(StockReserving,
                 When(StockReserved)
                     /*
-                     * for commands will be using Send() because it is point to point and calls specific service,
+                     * if Forcing delivery to specific queue is needed, for commands, will be using Send(). it is point to point and calls specific service,
                      * knows exact destination and has one logical receiving endpoint
                      * sends commands
                      */
-                    .Send(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.ConsumerEmail))
+                    .Publish(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.ConsumerEmail))
                     .TransitionTo(PaymentCharging),
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
@@ -95,7 +95,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     //.Finalize(),
                 // if payment failed release stock
                 When(PaymentFailed)
-                    .Send(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
+                    .Publish(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
                     .TransitionTo(Compensating)
             );
             // if compensated succeeded finalize instance
