@@ -72,6 +72,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     /*
                      * for commands will be using Send() because it is point to point and calls specific service,
                      * knows exact destination and has one logical receiving endpoint
+                     * sends commands
                      */
                     .Send(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.ConsumerEmail))
                     .TransitionTo(PaymentCharging),
