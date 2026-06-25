@@ -13,7 +13,6 @@
     <Project Path="RabbitMqDemo.Persistance/RabbitMqDemo.Persistance.csproj" Id="c43c3e3b-ec78-4b8a-b9e3-08ca145a7093" />
   </Folder>
   <Folder Name="/Server/">
-    <Project Path="RabbitMq.Consumer/RabbitMq.Consumer.csproj" Id="faeaa09f-40ab-4891-9daf-11db389843e8" />
-    <Project Path="RabbitMq.Producer/RabbitMq.Producer.csproj" Id="f2e60df4-4b7e-46fa-a152-cd0c8d93350c" />
+    <Project Path="RabbitMq.Consumer/RabbitMq.Api.csproj" Id="faeaa09f-40ab-4891-9daf-11db389843e8" />
   </Folder>
 </Solution>

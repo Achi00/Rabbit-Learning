@@ -71,6 +71,18 @@ builder.Services.AddMassTransit(x =>
         // creates queue for consumer, binds command message type to that queue
         cfg.ConfigureEndpoints(ctx);
     });
+
+    x.AddEntityFrameworkOutbox<MessageDbContext>(c =>
+    {
+        c.UseSqlServer();
+        c.UseBusOutbox();
+    });
+
+    x.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host("localhost");
+        cfg.ConfigureEndpoints(ctx);
+    });
 });
 
 // add db context
