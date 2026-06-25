@@ -25,6 +25,8 @@ builder.Services.AddMassTransit(x =>
     */
     x.AddConsumer<OrderSubmittedConsumer>();
     x.AddConsumer<NotificationConsumer>();
+    x.AddConsumer<ReserveStockConsumer>();
+    x.AddConsumer<ReleaseStockConsumer>();
 
     // register saga
     x.AddSagaStateMachine<OrderStateMachine, OrderSagaState>()
