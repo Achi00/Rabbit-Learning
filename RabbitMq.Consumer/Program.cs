@@ -22,11 +22,13 @@ builder.Services.AddMassTransit(x =>
     * used in case we need standalone consumer logic or when something needs to react
     * on same event independently, without saga,
     * those consumers replaced my custom handlers and bg workers
+    * AddConsumer registers consumer in masstransit DI
     */
     x.AddConsumer<OrderSubmittedConsumer>();
     x.AddConsumer<NotificationConsumer>();
     x.AddConsumer<ReserveStockConsumer>();
     x.AddConsumer<ReleaseStockConsumer>();
+    x.AddConsumer<ChargePaymentConsumer>();
 
     // register saga
     x.AddSagaStateMachine<OrderStateMachine, OrderSagaState>()
@@ -41,24 +43,27 @@ builder.Services.AddMassTransit(x =>
         cfg.Host("localhost");
 
         // not global configurations
-        cfg.ReceiveEndpoint("fulfillment-queue", e => 
-        {
-            e.UseMessageRetry(r => r.Exponential(
-                retryLimit: 3,
-                minInterval: TimeSpan.FromSeconds(5),
-                maxInterval: TimeSpan.FromSeconds(5),
-                intervalDelta: TimeSpan.FromSeconds(30)
-            ));
+        //cfg.ReceiveEndpoint("fulfillment-queue", e => 
+        //{
+        //    e.UseMessageRetry(r => r.Exponential(
+        //        retryLimit: 3,
+        //        minInterval: TimeSpan.FromSeconds(5),
+        //        maxInterval: TimeSpan.FromSeconds(5),
+        //        intervalDelta: TimeSpan.FromSeconds(30)
+        //    ));
 
-            e.ConfigureConsumer<OrderSubmittedConsumer>(ctx);
-        });
+        //    // places consumer on queue
+        //    e.ConfigureConsumer<OrderSubmittedConsumer>(ctx);
+        //});
 
-        // global configuration, TEST LATER
-        //cfg.UseMessageRetry(r => r.Exponential(3,
-        //TimeSpan.FromSeconds(5),
-        //TimeSpan.FromMinutes(5),
-        //TimeSpan.FromSeconds(30)));
+        cfg.UseMessageRetry(r => r.Exponential(
+            retryLimit: 3,
+            minInterval: TimeSpan.FromSeconds(5),
+            maxInterval: TimeSpan.FromMinutes(5),
+            intervalDelta: TimeSpan.FromSeconds(30)
+        ));
 
+        // creates queue for consumer, binds command message type to that queue
         cfg.ConfigureEndpoints(ctx);
     });
 });

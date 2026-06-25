@@ -8,6 +8,11 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
      * Changing sata state and ef core interaction happends on initialization after calling methon Then()
      * after TransitionTo, ef core should match correlaton id to saga id
      */
+
+    /*
+     * Connections between saga, consumers, events and commands
+     * Saga receives event -> saga sends command -> consumer does work -> consumer publishes event -> saga receiver event
+     */
     public class OrderStateMachine : MassTransitStateMachine<OrderSagaState>
     {
         // this states replace old enum SagaStep
