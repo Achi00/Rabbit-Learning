@@ -1,4 +1,5 @@
-﻿using RabbitMq.Domain.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Interfaces.Repositories.Orders;
 using RabbitMqDemo.Persistance.Context;
 
@@ -8,24 +9,38 @@ namespace RabbitMq.Infrastructure.Repositories
     {
         private readonly MessageDbContext _context;
 
+        public OrderRepository(MessageDbContext context)
+        {
+            _context = context;
+        }
+
         public void CreateOrder(Order order, CancellationToken ct = default)
         {
             _context.Orders.Add(order);
         }
 
-        public Task<List<Order>> GetAllAsync(CancellationToken ct = default)
+        public async Task<List<Order>> GetAllAsync(CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return await _context.Orders.AsNoTracking().ToListAsync(ct);
         }
 
-        public Task<Order> GetByIdAsync(Guid orderId, CancellationToken ct = default)
+        public async Task<Order?> GetByIdAsync(Guid orderId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return await _context.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == orderId, ct);
         }
 
-        public void UpdateOrder(Order order, CancellationToken ct = default)
+        public async void UpdateOrder(Order order, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var exists = await _context.Orders.FirstOrDefaultAsync(o => o.Id == order.Id, ct);
+
+            if (exists == null)
+            {
+                // this should be custom not found exception, but in this case fine...
+                throw new Exception("Order was not fount");
+            }
+            // this should be passed dto for updating but in this case also fine..
+            // update only amount
+            exists = exists with { Amount = order.Amount };
         }
     }
 }
