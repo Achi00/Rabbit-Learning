@@ -53,6 +53,18 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
 
+
+            /*
+             * Saga waiting and executing events, no async code here at the moment
+             * Masstransir gets message, identifies message type, then gets correlation id, 
+             * fetches row with ef core from db
+             * checks current state, tryes to match in During/When process, 
+             * updates state in memory, publishes message, updates db row
+             * 
+             * on every new process it fetches by correlation id and does same process again
+             * based on db row state + event type passed in During/When
+             */
+
             // Initially handles messages when saga is not created yet
             // when order is subbmited update state to reserving stock
             Initially(

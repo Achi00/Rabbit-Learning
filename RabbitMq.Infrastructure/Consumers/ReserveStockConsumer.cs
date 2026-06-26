@@ -13,6 +13,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
 
             if (success)
             {
+                // published event back to state machine, it should updates state based on type
                 await context.Publish
                 (
                     new StockReserved(context.Message.SagaId, context.Message.OrderId)

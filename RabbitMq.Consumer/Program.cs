@@ -14,6 +14,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// add db context
+builder.Services.AddDbContext<MessageDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
 builder.Services.AddMassTransit(x =>
 {
     // register consumers
@@ -29,11 +35,12 @@ builder.Services.AddMassTransit(x =>
      * AddConsumer creates endpoint queue:reserve-stock which maps to RabbitMQ queue "reserve-stock"
      * bounds to exchange reserve-stock
      */
-    x.AddConsumer<OrderSubmittedConsumer>();
+    // saga already hanbdles thesem no need to add as seperate consumers
+    //x.AddConsumer<OrderSubmittedConsumer>();
+    //x.AddConsumer<ChargePaymentConsumer>();
     x.AddConsumer<NotificationConsumer>();
     x.AddConsumer<ReserveStockConsumer>();
     x.AddConsumer<ReleaseStockConsumer>();
-    x.AddConsumer<ChargePaymentConsumer>();
 
     // register saga
     x.AddSagaStateMachine<OrderStateMachine, OrderSagaState>()
@@ -83,12 +90,6 @@ builder.Services.AddMassTransit(x =>
         cfg.Host("localhost");
         cfg.ConfigureEndpoints(ctx);
     });
-});
-
-// add db context
-builder.Services.AddDbContext<MessageDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 var app = builder.Build();
