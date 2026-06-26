@@ -10,7 +10,7 @@ namespace RabbitMQ.Application.Services
         private readonly Random _random = new Random();
         public async Task ProcessOrderAsync(Order order)
         {
-            if (string.IsNullOrWhiteSpace(order.ConsumerEmail))
+            if (string.IsNullOrWhiteSpace(order.CustomerEmail))
             {
                 throw new InvalidOrderException("Customer email mising");
             }

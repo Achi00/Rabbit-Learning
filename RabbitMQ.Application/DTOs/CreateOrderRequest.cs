@@ -3,6 +3,6 @@
     public class CreateOrderRequest
     {
         public decimal Amount { get; set; }
-        public string ConsumerEmail { get; set; }
+        public string CustomerEmail { get; set; }
     }
 }

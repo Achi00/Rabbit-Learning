@@ -63,7 +63,7 @@ namespace RabbitMQ.Application.Sagas
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ChargePayment,
                 // pass next step
-                Payload = JsonSerializer.Serialize(new ChargePayment(evt.SagaId, evt.OrderId, order.Amount, order.ConsumerEmail)),
+                Payload = JsonSerializer.Serialize(new ChargePayment(evt.SagaId, evt.OrderId, order.Amount, order.CustomerEmail)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }

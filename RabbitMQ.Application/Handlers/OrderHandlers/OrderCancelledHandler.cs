@@ -40,7 +40,7 @@ namespace RabbitMQ.Application.Handlers.OrderHandlers
             }
             var order = payload.Deserialize<Order>() ?? throw new InvalidOperationException("Invalid OrderMessage payload");
 
-            _logger.LogInformation("Cancelling order {OrderId} for {Email}", order.Id, order.ConsumerEmail);
+            _logger.LogInformation("Cancelling order {OrderId} for {Email}", order.Id, order.CustomerEmail);
             
             await _orderCancelProcessor.CancelOrderAsync(order);
 

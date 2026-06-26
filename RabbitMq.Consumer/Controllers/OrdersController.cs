@@ -27,7 +27,7 @@ namespace RabbitMq.Api.Controllers
             {
                 Id = Guid.NewGuid(),
                 Amount = request.Amount,
-                ConsumerEmail = request.ConsumerEmail,
+                CustomerEmail = request.CustomerEmail,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
@@ -37,7 +37,7 @@ namespace RabbitMq.Api.Controllers
             // MassTransit writes it to OutboxMessages table inside
             await _publishEndpoint.Publish(new OrderSubmitted(
                 order.Id,
-                order.ConsumerEmail,
+                order.CustomerEmail,
                 order.Amount
             ));
 

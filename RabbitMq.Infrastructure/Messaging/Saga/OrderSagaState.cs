@@ -15,6 +15,6 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
         public decimal Amount { get; set; }
-        public string ConsumerEmail { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
     }
 }

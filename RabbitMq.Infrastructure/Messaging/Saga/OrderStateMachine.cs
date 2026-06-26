@@ -75,7 +75,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
                         ctx.Saga.Amount = ctx.Message.Amount;
-                        ctx.Saga.ConsumerEmail = ctx.Message.ConsumerEmail;
+                        ctx.Saga.CustomerEmail = ctx.Message.CustomerEmail;
                     })
                     // publishes to broker
                     .Publish(ctx => new ReserveStock(ctx.Saga.CorrelationId, ctx.Message.OrderId))
@@ -91,7 +91,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                      * knows exact destination and has one logical receiving endpoint
                      * sends commands
                      */
-                    .Publish(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.ConsumerEmail))
+                    .Publish(ctx => new ChargePayment(ctx.Saga.CorrelationId, ctx.Saga.OrderId, ctx.Saga.Amount, ctx.Saga.CustomerEmail))
                     .TransitionTo(PaymentCharging),
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
@@ -102,7 +102,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if payment charged sucesfully, finalize instance, this is final state
             During(PaymentCharging, 
                 When(PaymentCharged)
-                    .Publish(ctx => new OrderCompleted(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
+                    .Publish(ctx => new OrderCompleted(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
                     .TransitionTo(Completed),
                     //.Finalize(),
                 // if payment failed release stock
@@ -113,7 +113,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if compensated succeeded finalize instance
             During(Compensating,
                 When(StockReleased)
-                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.ConsumerEmail))
+                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
                     .TransitionTo(Compensated)
                     //.Finalize()
             );

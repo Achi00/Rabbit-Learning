@@ -8,7 +8,7 @@ namespace RabbitMq.Domain.Entity
 
         public decimal Amount { get; set; }
 
-        public string ConsumerEmail { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
 
         public OrderStatus Status { get; set; }
 

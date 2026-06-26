@@ -38,7 +38,7 @@ namespace RabbitMQ.Application.Workers
                 {
                     Id = Guid.NewGuid(),
                     Amount = 100,
-                    ConsumerEmail = $"mail{i}@gmail.com"
+                    CustomerEmail = $"mail{i}@gmail.com"
                 };
                 
                 // fixes naming missmatch from Order type field Id and OrderId in events
