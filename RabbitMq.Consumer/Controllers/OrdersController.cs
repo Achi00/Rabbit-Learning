@@ -1,9 +1,7 @@
-﻿using MassTransit;
-using Microsoft.AspNetCore.Mvc;
-using RabbitMq.Contracts.Events;
-using RabbitMq.Domain.Entity;
+﻿using Microsoft.AspNetCore.Mvc;
+using RabbitMq.Domain.Enums;
 using RabbitMQ.Application.DTOs;
-using RabbitMqDemo.Persistance.Context;
+using RabbitMQ.Application.Interfaces.Services.Orders;
 
 namespace RabbitMq.Api.Controllers
 {
@@ -11,54 +9,32 @@ namespace RabbitMq.Api.Controllers
     [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly MessageDbContext _db;
-
-        public OrdersController(IPublishEndpoint publishEndpoint, MessageDbContext db)
+		private readonly IOrderService _orderService;
+		public OrdersController(IOrderService orderService)
         {
-            _publishEndpoint = publishEndpoint;
-            _db = db;
+			_orderService = orderService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
-        {
-            var order = new Order
-            {
-                Id = Guid.NewGuid(),
-                Amount = request.Amount,
-                CustomerEmail = request.CustomerEmail,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
+		[HttpGet]
+		public async Task<IActionResult> GetAll(CancellationToken ct)
+		{
+			var orders = await _orderService.GetAllAsync(ct);
 
-            await _db.Orders.AddAsync(order);
+			return Ok(orders);
+		}
 
-            // goes through the outbox not sent to broker directly
-            // MassTransit writes it to OutboxMessages table inside
-            await _publishEndpoint.Publish(new OrderSubmitted(
-                order.Id,
-                order.CustomerEmail,
-                order.Amount
-            ));
+		[HttpPost]
+		public async Task<IActionResult> SubmitOrder(
+		CreateOrderRequest request,
+		CancellationToken ct)
+		{
+			var orderId = await _orderService.SubmitOrderAsync(request, ct);
 
-
-            await _db.SaveChangesAsync();
-
-            return Accepted(new { orderId = order.Id });
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetOrder(Guid id)
-        {
-            var order = await _db.Orders.FindAsync(id);
-            if (order is null) return NotFound();
-            return Ok(order);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> SubmitOrder(SubmitOrderRequest request, CancellationToken ct)
-        {
-            return Ok();
-        }
-    }
+			return Accepted(new
+			{
+				OrderId = orderId,
+				Status = OrderStatus.Submitted
+			});
+		}
+	}
 }

@@ -1,6 +1,8 @@
 ﻿using Azure.Core;
 using MassTransit;
+using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
+using RabbitMq.Domain.Enums;
 using RabbitMQ.Application.DTOs;
 using RabbitMQ.Application.Interfaces.Repositories.Orders;
 using RabbitMQ.Application.Interfaces.Services.Orders;
@@ -23,7 +25,7 @@ namespace RabbitMQ.Application.Services.Orders
         }
 
         // should include unit of works
-        public Task<Guid> SubmitOrderAsync(CreateOrderRequest request, CancellationToken ct = default)
+        public async Task<Guid> SubmitOrderAsync(CreateOrderRequest request, CancellationToken ct = default)
         {
             var orderId = Guid.NewGuid();
 
@@ -32,12 +34,18 @@ namespace RabbitMQ.Application.Services.Orders
                 Id = orderId,
                 CustomerEmail = request.CustomerEmail,
                 Amount = request.Amount,
+                Status = OrderStatus.Submitted,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
             _orderRepository.CreateOrder(order, ct);
 
-            return Task.FromResult(orderId);
+            // first publishe then save changes, because we use outbox pattern
+            await _publishEndpoint.Publish(new OrderSubmitted(orderId, order.CustomerEmail, order.Amount), ct);
+
+            await _orderRepository.SaveChangesAsync(ct);
+
+            return orderId;
         }
     }
 }
