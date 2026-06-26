@@ -2,7 +2,11 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using RabbitMq.Infrastructure.Messaging.Consumers;
 using RabbitMq.Infrastructure.Messaging.Saga;
+using RabbitMq.Infrastructure.Repositories;
+using RabbitMQ.Application.Interfaces.Repositories.Orders;
+using RabbitMQ.Application.Interfaces.Services.Orders;
 using RabbitMQ.Application.Sagas;
+using RabbitMQ.Application.Services.Orders;
 using RabbitMqDemo.Persistance.Context;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +23,9 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddMassTransit(x =>
 {
