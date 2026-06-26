@@ -38,11 +38,11 @@ namespace RabbitMQ.Application.Workers
                 {
                     Id = Guid.NewGuid(),
                     Amount = 100,
-                    CustomerEmail = $"mail{i}@gmail.com"
+                    ConsumerEmail = $"mail{i}@gmail.com"
                 };
                 
                 // fixes naming missmatch from Order type field Id and OrderId in events
-                var orderCreatedEvent = new OrderSubmitted(order.Id);
+                var orderCreatedEvent = new OrderSubmitted(order.Id, "", 0);
                 
                 var outboxMessage = new OutboxMessage
                 {

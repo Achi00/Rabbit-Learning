@@ -40,7 +40,7 @@ namespace RabbitMq.Infrastructure.Repositories
             }
             // this should be passed dto for updating but in this case also fine..
             // update only amount
-            exists = exists with { Amount = order.Amount };
+            //exists = exists with { Amount = order.Amount };
         }
     }
 }

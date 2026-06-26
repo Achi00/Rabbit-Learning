@@ -16,7 +16,7 @@ namespace RabbitMqDemo.Persistance.Configurations
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(x => x.CustomerEmail)
+            builder.Property(x => x.ConsumerEmail)
                 .IsRequired()
                 .HasMaxLength(250);
         }

@@ -1,5 +1,4 @@
 ﻿using MassTransit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
@@ -28,7 +27,7 @@ namespace RabbitMq.Api.Controllers
             {
                 Id = Guid.NewGuid(),
                 Amount = request.Amount,
-                CustomerEmail = request.CustomerEmail,
+                ConsumerEmail = request.ConsumerEmail,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
@@ -38,7 +37,7 @@ namespace RabbitMq.Api.Controllers
             // MassTransit writes it to OutboxMessages table inside
             await _publishEndpoint.Publish(new OrderSubmitted(
                 order.Id,
-                order.CustomerEmail,
+                order.ConsumerEmail,
                 order.Amount
             ));
 
@@ -54,6 +53,12 @@ namespace RabbitMq.Api.Controllers
             var order = await _db.Orders.FindAsync(id);
             if (order is null) return NotFound();
             return Ok(order);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitOrder(SubmitOrderRequest request, CancellationToken ct)
+        {
+            return Ok();
         }
     }
 }

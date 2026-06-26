@@ -1,9 +1,23 @@
-﻿namespace RabbitMq.Domain.Entity
+﻿using RabbitMq.Domain.Enums;
+
+namespace RabbitMq.Domain.Entity
 {
-    public record Order
+    public class Order
     {
-        public Guid Id { get; init; }
-        public decimal Amount { get; init; }
-        public string CustomerEmail { get; init; } = "";
+        public Guid Id { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string ConsumerEmail { get; set; } = string.Empty;
+
+        public OrderStatus Status { get; set; }
+
+        public string? FailureReason { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
+
+        public DateTimeOffset? CompletedAt { get; set; }
+
+        public DateTimeOffset? CancelledAt { get; set; }
     }
 }
