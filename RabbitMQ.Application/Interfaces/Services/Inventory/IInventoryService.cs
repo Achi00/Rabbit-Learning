@@ -1,4 +1,6 @@
-﻿namespace RabbitMQ.Application.Interfaces.Services.Inventory
+﻿using RabbitMQ.Application.Results;
+
+namespace RabbitMQ.Application.Interfaces.Services.Inventory
 {
     public interface IInventoryService
     {
