@@ -49,7 +49,7 @@ namespace RabbitMQ.Application.Workers
 
         private string GetHeader(IDictionary<string, object?>? headers, string key)
         {
-            if (headers == null || !headers.TryGetValue(key, out var value))
+            if (headers is null || !headers.TryGetValue(key, out var value))
             {
                 return "unknown";
             }

@@ -9,7 +9,7 @@ namespace RabbitMQ.Application.Services
         private readonly Random _random = new Random();
         public async Task CancelOrderAsync(Order? order)
         {
-            if (order == null)
+            if (order is null)
             {
                 throw new InvalidOrderException("Order cant be found");
             }

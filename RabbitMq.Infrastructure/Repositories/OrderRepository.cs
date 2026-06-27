@@ -38,7 +38,7 @@ namespace RabbitMq.Infrastructure.Repositories
         {
             var exists = await _context.Orders.FirstOrDefaultAsync(o => o.Id == order.Id, ct);
 
-            if (exists == null)
+            if (exists is null)
             {
                 // this should be custom not found exception, but in this case fine...
                 throw new Exception("Order was not fount");

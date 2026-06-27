@@ -38,7 +38,7 @@ namespace RabbitMQ.Application.Workers
             var publisher = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
             // fetch unsent rows
             var pending = await db.OutboxMessages
-                .Where(x => x.SentAt == null)
+                .Where(x => x.SentAt is null)
                 .OrderBy(x => x.CreatedAt)
                 .Take(50)
                 .ToListAsync(ct);

@@ -17,7 +17,7 @@ namespace RabbitMQ.Application.Services.Inventory
         {
             var order = await _orderRepository.GetByIdAsync(orderId, ct);
 
-            if (order == null)
+            if (order is null)
             {
                 return OperationResult.Fail("Order not found");
             }
