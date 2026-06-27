@@ -13,7 +13,7 @@ namespace RabbitMQ.Application.Services.Inventory
         {
             _orderRepository = orderRepository;
         }
-        public async Task<OperationResult> ReleaseStockAsync(Guid orderId, CancellationToken ct = default)
+        public async Task<OperationResult> ReserveStockAsync(Guid orderId, CancellationToken ct = default)
         {
             var order = await _orderRepository.GetByIdAsync(orderId, ct);
 
@@ -43,7 +43,7 @@ namespace RabbitMQ.Application.Services.Inventory
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> ReserveStockAsync(Guid orderId, CancellationToken ct = default)
+        public async Task<OperationResult> ReleaseStockAsync(Guid orderId, CancellationToken ct = default)
         {
             var order = await _orderRepository.GetByIdAsync(orderId, ct);
 
