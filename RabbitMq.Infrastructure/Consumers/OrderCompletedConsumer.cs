@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMQ.Application.Interfaces.Services.Orders;
 
@@ -19,7 +20,11 @@ namespace RabbitMq.Infrastructure.Consumers
 
             if (order is not null)
             {
-                await context.Publish(new OrderCompleted(order.Id, order.CustomerEmail));
+                await context.Publish(new OrderCompleted(context.Message.OrderId, context.Message.CustomerEmail));
+            }
+            else
+            {
+                await context.Publish(new OrderCancelled(context.Message.OrderId, context.Message.CustomerEmail));
             }
         }
     }
