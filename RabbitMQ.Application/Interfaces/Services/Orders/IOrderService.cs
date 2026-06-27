@@ -8,5 +8,7 @@ namespace RabbitMQ.Application.Interfaces.Services.Orders
         Task<List<Order>> GetAllAsync(CancellationToken ct = default);
         Task<Order?> GetByIdAsync(Guid orderId,CancellationToken ct = default);
         Task<Guid> SubmitOrderAsync(CreateOrderRequest request, CancellationToken ct = default);
+        Task MarkCompletedAsync(Guid orderId, CancellationToken ct = default);
+        Task MarkCancelledAsync(Guid orderId, string? reason, CancellationToken ct = default);
     }
 }

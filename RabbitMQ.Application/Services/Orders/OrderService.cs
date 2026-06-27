@@ -35,6 +35,34 @@ namespace RabbitMQ.Application.Services.Orders
             return order;
         }
 
+        public Task MarkCancelledAsync(Guid orderId, string? reason, CancellationToken ct = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task MarkCompletedAsync(Guid orderId, CancellationToken ct = default)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, ct);
+
+            if (order is null)
+            {
+                return;
+            }
+
+            if (order.Status == OrderStatus.Completed)
+            {
+                return;
+            }
+
+            order.Status = OrderStatus.Completed;
+            order.CompletedAt = DateTimeOffset.UtcNow;
+            order.FailureReason = null;
+
+            _orderRepository.UpdateOrder(order);
+
+            await _orderRepository.SaveChangesAsync(ct);
+        }
+
         // should include unit of works
         public async Task<Guid> SubmitOrderAsync(CreateOrderRequest request, CancellationToken ct = default)
         {
