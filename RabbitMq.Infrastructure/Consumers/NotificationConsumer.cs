@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
-using RabbitMq.Contracts.Commands;
+using RabbitMq.Contracts.Events;
 
 namespace RabbitMq.Infrastructure.Messaging.Consumers
 {
