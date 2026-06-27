@@ -32,6 +32,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public Event<PaymentCharged> PaymentCharged { get; private set; }
         public Event<PaymentFailed> PaymentFailed { get; private set; }
         public Event<StockReleased> StockReleased { get; private set; }
+        public Event<StockReleaseFailed> StockReleaseFailed { get; private set; }
 
         public OrderStateMachine()
         {
@@ -52,6 +53,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => StockReleaseFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
 
 
             /*
@@ -116,6 +118,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
                     .TransitionTo(Compensated)
                     //.Finalize()
+                
             );
 
             // remove completed saga rows from db

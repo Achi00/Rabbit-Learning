@@ -22,7 +22,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
             }
             else
             {
-
+                await context.Publish(new StockReleaseFailed(context.Message.SagaId, context.Message.OrderId, result.ErrorMessage ?? "Stock release failed"));
             }
         }
     }

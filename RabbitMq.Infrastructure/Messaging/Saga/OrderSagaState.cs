@@ -9,6 +9,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
 
         // masstransig tracks current state as string
         public string CurrentState { get; set; }
+        public string? FailureReason { get; set; }
 
         // my order fields
         public Guid OrderId { get; set; }

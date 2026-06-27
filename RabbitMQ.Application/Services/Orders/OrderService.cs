@@ -24,6 +24,17 @@ namespace RabbitMQ.Application.Services.Orders
             return await _orderRepository.GetAllAsync(ct);
         }
 
+        public async Task<Order?> GetByIdAsync(Guid orderId, CancellationToken ct = default)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, ct);
+
+            if (order is null)
+            {
+                throw new Exception("Order was not found");
+            }
+            return order;
+        }
+
         // should include unit of works
         public async Task<Guid> SubmitOrderAsync(CreateOrderRequest request, CancellationToken ct = default)
         {
