@@ -18,10 +18,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         // this states replace old enum SagaStep
         public State StockReserving { get; private set; }
         public State PaymentCharging { get; private set; }
-        public State Completed { get; private set; }
-        public State Cancelled { get; private set; }
         public State Compensating { get; private set; }
-        public State Compensated { get; private set; }
         public State ManualReview { get; private set; } = null!;
 
         // events, each maps to message type
@@ -105,7 +102,6 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                         ctx.Saga.FailureReason = ctx.Message.Reason;
                     })
                     .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
-                    .TransitionTo(Cancelled)
                     // finalize removes row???
                     .Finalize()
             );
