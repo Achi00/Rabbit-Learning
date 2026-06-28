@@ -16,16 +16,7 @@ namespace RabbitMq.Infrastructure.Consumers
 
         public async Task Consume(ConsumeContext<OrderCompleted> context)
         {
-            var order = await _orderService.GetByIdAsync(context.Message.OrderId);
-
-            if (order is not null)
-            {
-                await context.Publish(new OrderCompleted(context.Message.OrderId, context.Message.CustomerEmail));
-            }
-            else
-            {
-                await context.Publish(new OrderCancelled(context.Message.OrderId, context.Message.CustomerEmail));
-            }
+            await _orderService.MarkCompletedAsync(context.Message.OrderId, context.CancellationToken);
         }
     }
 }

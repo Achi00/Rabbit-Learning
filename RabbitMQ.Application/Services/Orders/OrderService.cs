@@ -35,9 +35,27 @@ namespace RabbitMQ.Application.Services.Orders
             return order;
         }
 
-        public Task MarkCancelledAsync(Guid orderId, string? reason, CancellationToken ct = default)
+        public async Task MarkCancelledAsync(Guid orderId, string? reason, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var order = await _orderRepository.GetByIdAsync(orderId, ct);
+
+            if (order is null)
+            {
+                return;
+            }
+            // will avoid idempotency issue
+            if (order.Status == OrderStatus.Cancelled)
+            {
+                return;
+            }
+            order.Status = OrderStatus.Cancelled;
+            order.CompletedAt = DateTimeOffset.UtcNow;
+            order.FailureReason = reason;
+
+            _orderRepository.UpdateOrder(order);
+
+            await _orderRepository.SaveChangesAsync(ct);
+
         }
 
         public async Task MarkCompletedAsync(Guid orderId, CancellationToken ct = default)
@@ -49,6 +67,7 @@ namespace RabbitMQ.Application.Services.Orders
                 return;
             }
 
+            // will avoid idempotency issue
             if (order.Status == OrderStatus.Completed)
             {
                 return;
