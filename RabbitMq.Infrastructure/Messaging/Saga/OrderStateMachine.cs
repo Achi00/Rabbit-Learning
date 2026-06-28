@@ -22,6 +22,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public State Cancelled { get; private set; }
         public State Compensating { get; private set; }
         public State Compensated { get; private set; }
+        public State ManualReview { get; private set; } = null!;
 
         // events, each maps to message type
         public Event<OrderSubmitted> OrderSubmitted { get; private set; }
@@ -115,10 +116,20 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             // if compensated succeeded finalize instance
             During(Compensating,
                 When(StockReleased)
-                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
-                    .TransitionTo(Compensated)
-                    //.Finalize()
-                
+                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
+                    .Finalize(),
+
+                When(StockReleaseFailed)
+                    .Then(ctx =>
+                    {
+                        ctx.Saga.FailureReason = $"Stock release failed: {ctx.Message.Reason}";
+                    })
+                    .Publish(ctx => new OrderRequiresManualReview(
+                        ctx.Saga.OrderId,
+                        ctx.Saga.CustomerEmail,
+                        ctx.Saga.CustomerEmail
+                    ))
+                    .TransitionTo(ManualReview)
             );
 
             // remove completed saga rows from db
