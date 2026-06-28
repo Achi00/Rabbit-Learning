@@ -34,6 +34,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
         public Event<PaymentFailed> PaymentFailed { get; private set; }
         public Event<StockReleased> StockReleased { get; private set; }
         public Event<StockReleaseFailed> StockReleaseFailed { get; private set; }
+        public Event<ManualReviewCompleted> ManualReviewCompleted { get; private set; }
 
         public OrderStateMachine()
         {
@@ -55,6 +56,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
             Event(() => StockReleaseFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => ManualReviewCompleted, x => x.CorrelateById(ctx => ctx.Message.SagaId));
 
 
             /*
@@ -129,7 +131,16 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                         ctx.Saga.CustomerEmail,
                         ctx.Saga.CustomerEmail
                     ))
+                    // will require admin or any human interaction/review for resolving
+                    // later admin will publish ManualReviewCompleted
                     .TransitionTo(ManualReview)
+            );
+
+            // if state enters manual revies step
+            // unsolved workflow will stay visible
+            During(ManualReview,
+                When(ManualReviewCompleted)
+                    .Finalize()
             );
 
             // remove completed saga rows from db
