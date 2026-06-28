@@ -3,7 +3,7 @@ using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMQ.Application.Interfaces.Services.Inventory;
 
-namespace RabbitMq.Infrastructure.Messaging.Consumers
+namespace RabbitMq.Infrastructure.Consumers.Inventory
 {
     // consumer gets involved when pirst message is already published
 

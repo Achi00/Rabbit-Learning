@@ -2,7 +2,7 @@
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 
-namespace RabbitMq.Infrastructure.Messaging.Consumers
+namespace RabbitMq.Infrastructure.Consumers.Payment
 {
     public class ChargePaymentConsumer : IConsumer<ChargePayment>
     {

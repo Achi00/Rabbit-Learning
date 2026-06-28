@@ -3,7 +3,7 @@ using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMQ.Application.Interfaces.Services.Orders;
 
-namespace RabbitMq.Infrastructure.Consumers
+namespace RabbitMq.Infrastructure.Consumers.Orders
 {
     public class OrderCompletedConsumer : IConsumer<OrderCompleted>
     {
