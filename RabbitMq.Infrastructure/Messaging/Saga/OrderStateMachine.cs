@@ -100,26 +100,34 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .TransitionTo(PaymentCharging),
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
+                    .Then(ctx =>
+                    {
+                        ctx.Saga.FailureReason = ctx.Message.Reason;
+                    })
                     .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
                     .TransitionTo(Cancelled)
                     // finalize removes row???
                     .Finalize()
             );
             // if payment charged sucesfully, finalize instance, this is final state
+            // no need for transitioning to Completed state if we finalized it
             During(PaymentCharging, 
                 When(PaymentCharged)
                     .Publish(ctx => new OrderCompleted(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
-                    .TransitionTo(Completed)
                     .Finalize(),
                 // if payment failed release stock
                 When(PaymentFailed)
+                    .Then(ctx =>
+                    {
+                        ctx.Saga.FailureReason = ctx.Message.Reason;
+                    })
                     .Publish(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
                     .TransitionTo(Compensating)
             );
             // if compensated succeeded finalize instance
             During(Compensating,
                 When(StockReleased)
-                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
+                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason ?? "Order failed compensating"))
                     .Finalize(),
 
                 When(StockReleaseFailed)
@@ -130,7 +138,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Publish(ctx => new OrderRequiresManualReview(
                         ctx.Saga.OrderId,
                         ctx.Saga.CustomerEmail,
-                        ctx.Saga.CustomerEmail
+                        ctx.Saga.FailureReason ?? "Manual review required"
                     ))
                     // will require admin or any human interaction/review for resolving
                     // later admin will publish ManualReviewCompleted
@@ -145,7 +153,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             );
 
             // remove completed saga rows from db
-            //SetCompletedWhenFinalized();
+            SetCompletedWhenFinalized();
         }
     }
 }
