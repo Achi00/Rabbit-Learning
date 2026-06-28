@@ -100,16 +100,17 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .TransitionTo(PaymentCharging),
                 // if stock reservation failled finalize instance
                 When(StockReservationFailed)
+                    .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
                     .TransitionTo(Cancelled)
                     // finalize removes row???
-                    //.Finalize()
+                    .Finalize()
             );
             // if payment charged sucesfully, finalize instance, this is final state
             During(PaymentCharging, 
                 When(PaymentCharged)
                     .Publish(ctx => new OrderCompleted(ctx.Saga.OrderId, ctx.Saga.CustomerEmail))
-                    .TransitionTo(Completed),
-                    //.Finalize(),
+                    .TransitionTo(Completed)
+                    .Finalize(),
                 // if payment failed release stock
                 When(PaymentFailed)
                     .Publish(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
