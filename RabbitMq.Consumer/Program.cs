@@ -5,9 +5,13 @@ using RabbitMq.Infrastructure.Messaging.Consumers;
 using RabbitMq.Infrastructure.Messaging.Saga;
 using RabbitMq.Infrastructure.Repositories;
 using RabbitMQ.Application.Interfaces.Repositories.Orders;
+using RabbitMQ.Application.Interfaces.Services.Inventory;
 using RabbitMQ.Application.Interfaces.Services.Orders;
+using RabbitMQ.Application.Interfaces.Services.Payment;
 using RabbitMQ.Application.Sagas;
+using RabbitMQ.Application.Services.Inventory;
 using RabbitMQ.Application.Services.Orders;
+using RabbitMQ.Application.Services.Payment;
 using RabbitMqDemo.Persistance.Context;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +31,8 @@ builder.Services.AddDbContext<MessageDbContext>(options =>
 
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -91,12 +97,6 @@ builder.Services.AddMassTransit(x =>
     {
         c.UseSqlServer();
         c.UseBusOutbox();
-    });
-
-    x.UsingRabbitMq((ctx, cfg) =>
-    {
-        cfg.Host("localhost");
-        cfg.ConfigureEndpoints(ctx);
     });
 });
 
