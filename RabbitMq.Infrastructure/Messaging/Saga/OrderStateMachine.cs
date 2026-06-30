@@ -148,7 +148,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             );
 
             // remove completed saga rows from db
-            SetCompletedWhenFinalized();
+            //SetCompletedWhenFinalized();
         }
     }
 }
