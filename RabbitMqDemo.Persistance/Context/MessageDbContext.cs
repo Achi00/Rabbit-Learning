@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RabbitMq.Domain.Entity;
-using RabbitMQ.Application.Models;
+using RabbitMq.Infrastructure.Messaging.Saga;
 
 namespace RabbitMqDemo.Persistance.Context
 {
@@ -16,6 +16,7 @@ namespace RabbitMqDemo.Persistance.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MessageDbContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderSagaState).Assembly);
         }
     }
 }

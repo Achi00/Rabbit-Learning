@@ -4,7 +4,6 @@ using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
 using RabbitMQ.Application.Enums;
-using RabbitMQ.Application.Models;
 using RabbitMqDemo.Persistance.Context;
 using System.Text.Json;
 
@@ -24,10 +23,10 @@ namespace RabbitMQ.Application.Sagas
         {
             var sagaId = Guid.NewGuid();
 
-            var sagaState = new OrderSagaState
+            var sagaState = new RabbitMq.Infrastructure.Messaging.Saga.OrderSagaState
             {
-                SagaId = sagaId,
-                CurrentStep = SagaStep.Started,
+                CorrelationId = sagaId,
+                CurrentState = SagaStep.Started.ToString(),
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
@@ -55,7 +54,7 @@ namespace RabbitMQ.Application.Sagas
             var order = await _context.Orders.FindAsync(evt.OrderId)
                 ?? throw new InvalidOperationException($"Order {evt.OrderId} not found");
 
-            saga.CurrentStep = SagaStep.StockReserved;
+            saga.CurrentState = SagaStep.StockReserved.ToString();
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _context.OutboxMessages.AddAsync(new OutboxMessage
@@ -74,7 +73,7 @@ namespace RabbitMQ.Application.Sagas
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
 
             // saga ends here, nothing to undo
-            saga.CurrentStep = SagaStep.Cancelled;
+            saga.CurrentState = SagaStep.Cancelled.ToString();
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
             // no outbox, because nothing succeeded
@@ -87,7 +86,7 @@ namespace RabbitMQ.Application.Sagas
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
 
             // saga ends here, compensation confirmed
-            saga.CurrentStep = SagaStep.Cancelled; 
+            saga.CurrentState = SagaStep.Cancelled.ToString(); 
             saga.UpdatedAt = DateTimeOffset.UtcNow;
             // no outbox
         }
@@ -100,7 +99,7 @@ namespace RabbitMQ.Application.Sagas
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
 
             // final state
-            saga.CurrentStep = SagaStep.Completed;
+            saga.CurrentState = SagaStep.Completed.ToString();
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
             // no outbox message, nothing left to do
@@ -112,7 +111,7 @@ namespace RabbitMQ.Application.Sagas
             var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
                 ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
 
-            saga.CurrentStep = SagaStep.Compensating;
+            saga.CurrentState = SagaStep.Compensating.ToString();
             saga.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _context.OutboxMessages.AddAsync(new OutboxMessage
