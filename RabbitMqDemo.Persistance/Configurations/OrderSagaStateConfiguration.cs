@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RabbitMq.Infrastructure.Messaging.Saga;
+using RabbitMq.Domain.Entity;
 
 namespace RabbitMqDemo.Persistance.Configurations
 {

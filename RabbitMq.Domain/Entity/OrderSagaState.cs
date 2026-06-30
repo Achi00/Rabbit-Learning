@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 
-namespace RabbitMq.Infrastructure.Messaging.Saga
+namespace RabbitMq.Domain.Entity
 {
     public class OrderSagaState : SagaStateMachineInstance
     {

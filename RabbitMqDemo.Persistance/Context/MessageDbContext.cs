@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RabbitMq.Domain.Entity;
-using RabbitMq.Infrastructure.Messaging.Saga;
 
 namespace RabbitMqDemo.Persistance.Context
 {

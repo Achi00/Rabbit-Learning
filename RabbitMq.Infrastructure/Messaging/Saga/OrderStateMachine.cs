@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using RabbitMq.Contracts.Commands;
 using RabbitMq.Contracts.Events;
+using RabbitMq.Domain.Entity;
 
 namespace RabbitMq.Infrastructure.Messaging.Saga
 {

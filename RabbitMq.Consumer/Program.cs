@@ -1,5 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using RabbitMq.Domain.Entity;
 using RabbitMq.Infrastructure.Consumers.Inventory;
 using RabbitMq.Infrastructure.Messaging.Consumers;
 using RabbitMq.Infrastructure.Messaging.Saga;

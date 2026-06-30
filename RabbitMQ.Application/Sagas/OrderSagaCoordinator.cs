@@ -23,7 +23,7 @@ namespace RabbitMQ.Application.Sagas
         {
             var sagaId = Guid.NewGuid();
 
-            var sagaState = new RabbitMq.Infrastructure.Messaging.Saga.OrderSagaState
+            var sagaState = new OrderSagaState
             {
                 CorrelationId = sagaId,
                 CurrentState = SagaStep.Started.ToString(),

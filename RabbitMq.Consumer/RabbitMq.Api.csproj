@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RabbitMQ.Application\RabbitMQ.Application.csproj" />
+    <ProjectReference Include="..\RabbitMq.Domain\RabbitMq.Domain.csproj" />
     <ProjectReference Include="..\RabbitMq.Infrastructure\RabbitMq.Infrastructure.csproj" />
   </ItemGroup>
 
