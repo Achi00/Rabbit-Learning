@@ -14,7 +14,7 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
         }
         public async Task Consume(ConsumeContext<ReleaseStock> context)
         {
-            var result = await _inventoryService.ReleaseStockAsync(context.Message.OrderId);
+            var result = await _inventoryService.ReleaseStockAsync(context.Message.OrderId, context.CancellationToken);
 
             if (result.Success)
             {
