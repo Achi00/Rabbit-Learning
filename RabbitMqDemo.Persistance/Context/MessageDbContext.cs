@@ -16,7 +16,6 @@ namespace RabbitMqDemo.Persistance.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MessageDbContext).Assembly);
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderSagaState).Assembly);
         }
     }
 }
