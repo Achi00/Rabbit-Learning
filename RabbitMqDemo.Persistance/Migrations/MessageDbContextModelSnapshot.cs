@@ -56,6 +56,42 @@ namespace RabbitMqDemo.Persistance.Migrations
                     b.ToTable("Orders", (string)null);
                 });
 
+            modelBuilder.Entity("RabbitMq.Domain.Entity.OrderSagaState", b =>
+                {
+                    b.Property<Guid>("CorrelationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CurrentState")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("CorrelationId");
+
+                    b.ToTable("OrderSagaState", (string)null);
+                });
+
             modelBuilder.Entity("RabbitMq.Domain.Entity.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -101,42 +137,6 @@ namespace RabbitMqDemo.Persistance.Migrations
                     b.HasKey("MessageId");
 
                     b.ToTable("ProcessedMessages", (string)null);
-                });
-
-            modelBuilder.Entity("RabbitMq.Infrastructure.Messaging.Saga.OrderSagaState", b =>
-                {
-                    b.Property<Guid>("CorrelationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CurrentState")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("CustomerEmail")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("FailureReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("CorrelationId");
-
-                    b.ToTable("OrderSagaState", (string)null);
                 });
 #pragma warning restore 612, 618
         }
