@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RabbitMq.Domain.Entity;
+using MassTransit;
 
 namespace RabbitMqDemo.Persistance.Context
 {
@@ -15,6 +16,9 @@ namespace RabbitMqDemo.Persistance.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MessageDbContext).Assembly);
+
+            modelBuilder.AddOutboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
         }
     }
 }
