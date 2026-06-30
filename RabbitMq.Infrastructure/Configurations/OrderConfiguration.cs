@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RabbitMq.Domain.Entity;
 
-namespace RabbitMqDemo.Persistance.Configurations
+namespace RabbitMq.Infrastructure.Configurations
 {
     public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
