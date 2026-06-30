@@ -1,7 +1,10 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using RabbitMq.Contracts.Events;
 using RabbitMq.Domain.Entity;
 using RabbitMq.Infrastructure.Consumers.Inventory;
+using RabbitMq.Infrastructure.Consumers.Orders;
+using RabbitMq.Infrastructure.Consumers.Payment;
 using RabbitMq.Infrastructure.Messaging.Consumers;
 using RabbitMq.Infrastructure.Messaging.Saga;
 using RabbitMq.Infrastructure.Repositories;
@@ -51,8 +54,8 @@ builder.Services.AddMassTransit(x =>
      * bounds to exchange reserve-stock
      */
     // saga already hanbdles thesem no need to add as seperate consumers
-    //x.AddConsumer<OrderSubmittedConsumer>();
-    //x.AddConsumer<ChargePaymentConsumer>();
+    x.AddConsumer<OrderCompletedConsumer>();
+    x.AddConsumer<ChargePaymentConsumer>();
     x.AddConsumer<NotificationConsumer>();
     x.AddConsumer<ReserveStockConsumer>();
     x.AddConsumer<ReleaseStockConsumer>();
