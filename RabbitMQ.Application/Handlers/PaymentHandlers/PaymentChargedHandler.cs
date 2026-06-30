@@ -33,7 +33,7 @@ namespace RabbitMQ.Application.Handlers.PaymentHandlers
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(PaymentCharged)}");
 
             // for testing
-            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(PaymentChargedHandler), evt.SagaId);
+            _logger.LogInformation("Handling {MessageType} for saga {CorrelationId}", nameof(PaymentChargedHandler), evt.CorrelationId);
 
 
             await _coordinator.OnPaymentChargedAsync(evt);

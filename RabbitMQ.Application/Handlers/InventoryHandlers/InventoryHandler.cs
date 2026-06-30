@@ -36,7 +36,7 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
             var command = payload.Deserialize<ReserveStock>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReserveStock)} from payload.");
 
-            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(InventoryHandler), command.SagaId);
+            _logger.LogInformation("Handling {MessageType} for saga {CorrelationId}", nameof(InventoryHandler), command.CorrelationId);
 
 
             // simulate ~70% success rate
@@ -51,7 +51,7 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
                 { 
                     Id = Guid.NewGuid(),
                     MessageType = MessageTypes.StockReserved, 
-                    Payload = JsonSerializer.Serialize(new StockReserved(command!.SagaId, command.OrderId)),
+                    Payload = JsonSerializer.Serialize(new StockReserved(command!.CorrelationId, command.OrderId)),
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
             }
@@ -61,7 +61,7 @@ namespace RabbitMQ.Application.Handlers.InventoryHandlers
                 {
                     Id = Guid.NewGuid(),
                     MessageType = MessageTypes.StockReservationFailed, 
-                    Payload = JsonSerializer.Serialize(new StockReservationFailed(command!.SagaId, command.OrderId, "Out of stock")) ,
+                    Payload = JsonSerializer.Serialize(new StockReservationFailed(command!.CorrelationId, command.OrderId, "Out of stock")) ,
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
             }

@@ -1,5 +1,5 @@
 ﻿namespace RabbitMq.Contracts.Events
 {
-    public record StockReserved(Guid SagaId, Guid OrderId);
+    public record StockReserved(Guid CorrelationId, Guid OrderId);
 
 }

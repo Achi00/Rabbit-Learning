@@ -46,13 +46,13 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
             });
 
             // after every new arrivel masstransit reads correlation and should load saga from db
-            Event(() => StockReserved, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => StockReservationFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => StockReleaseFailed, x => x.CorrelateById(ctx => ctx.Message.SagaId));
-            Event(() => ManualReviewCompleted, x => x.CorrelateById(ctx => ctx.Message.SagaId));
+            Event(() => StockReserved, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => StockReservationFailed, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => PaymentCharged, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => PaymentFailed, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => StockReleased, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => StockReleaseFailed, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
+            Event(() => ManualReviewCompleted, x => x.CorrelateById(ctx => ctx.Message.CorrelationId));
 
 
             /*

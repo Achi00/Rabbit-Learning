@@ -12,11 +12,11 @@ namespace RabbitMq.Infrastructure.Consumers.Payment
 
             if (success)
             {
-                await context.Publish(new PaymentCharged(context.Message.SagaId, context.Message.OrderId));
+                await context.Publish(new PaymentCharged(context.Message.CorrelationId, context.Message.OrderId));
             }
             else
             {
-                await context.Publish(new PaymentFailed(context.Message.SagaId, context.Message.OrderId, "Card Declined"));
+                await context.Publish(new PaymentFailed(context.Message.CorrelationId, context.Message.OrderId, "Card Declined"));
             }
         }
     }

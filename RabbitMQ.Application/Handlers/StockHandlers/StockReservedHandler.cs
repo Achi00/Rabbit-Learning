@@ -31,7 +31,7 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
             var evt = payload.Deserialize<StockReserved>() 
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(StockReserved)}");
 
-            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(StockReservedHandler), evt.SagaId);
+            _logger.LogInformation("Handling {MessageType} for saga {CorrelationId}", nameof(StockReservedHandler), evt.CorrelationId);
 
 
             await _coordinator.OnStockReservedAsync(evt);

@@ -18,11 +18,11 @@ namespace RabbitMq.Infrastructure.Messaging.Consumers
 
             if (result.Success)
             {
-                await context.Publish(new StockReleased(context.Message.SagaId, context.Message.OrderId));
+                await context.Publish(new StockReleased(context.Message.CorrelationId, context.Message.OrderId));
             }
             else
             {
-                await context.Publish(new StockReleaseFailed(context.Message.SagaId, context.Message.OrderId, result.ErrorMessage ?? "Stock release failed"));
+                await context.Publish(new StockReleaseFailed(context.Message.CorrelationId, context.Message.OrderId, result.ErrorMessage ?? "Stock release failed"));
             }
         }
     }

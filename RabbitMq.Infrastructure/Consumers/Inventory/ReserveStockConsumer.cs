@@ -23,11 +23,11 @@ namespace RabbitMq.Infrastructure.Consumers.Inventory
 
             if (result.Success)
             {
-                await context.Publish(new StockReserved(message.SagaId, message.OrderId));
+                await context.Publish(new StockReserved(message.CorrelationId, message.OrderId));
             }
             else
             {
-                await context.Publish(new StockReservationFailed(message.SagaId, message.OrderId, result.ErrorMessage ?? "Stock reservation failed"));
+                await context.Publish(new StockReservationFailed(message.CorrelationId, message.OrderId, result.ErrorMessage ?? "Stock reservation failed"));
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿namespace RabbitMq.Contracts.Events
 {
-    public record StockReservationFailed(Guid SagaId, Guid OrderId, string Reason);
+    public record StockReservationFailed(Guid CorrelationId, Guid OrderId, string Reason);
 
 }

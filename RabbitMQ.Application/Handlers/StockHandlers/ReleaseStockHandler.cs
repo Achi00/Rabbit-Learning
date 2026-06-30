@@ -36,14 +36,14 @@ namespace RabbitMQ.Application.Handlers.StockHandlers
             var command = payload.Deserialize<ReleaseStock>()
                 ?? throw new InvalidOperationException($"Failed to deserialize {nameof(ReleaseStock)} from payload.");
 
-            _logger.LogInformation("Handling {MessageType} for saga {SagaId}", nameof(ReleaseStockHandler), command.SagaId);
+            _logger.LogInformation("Handling {MessageType} for saga {CorrelationId}", nameof(ReleaseStockHandler), command.CorrelationId);
 
 
             await _context.OutboxMessages.AddAsync(new OutboxMessage
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.StockReleased,
-                Payload = JsonSerializer.Serialize(new StockReleased(command.SagaId, command.OrderId)),
+                Payload = JsonSerializer.Serialize(new StockReleased(command.CorrelationId, command.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
 

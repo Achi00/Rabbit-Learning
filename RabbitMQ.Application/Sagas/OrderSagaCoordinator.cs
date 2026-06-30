@@ -48,8 +48,8 @@ namespace RabbitMQ.Application.Sagas
         // stock reservation succeeded, we call next step, charge payment command
         public async Task OnStockReservedAsync(StockReserved evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
-                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+            var saga = await _context.OrderSagaState.FindAsync(evt.CorrelationId)
+                ?? throw new InvalidOperationException($"Saga {evt.CorrelationId} not found");
 
             var order = await _context.Orders.FindAsync(evt.OrderId)
                 ?? throw new InvalidOperationException($"Order {evt.OrderId} not found");
@@ -62,15 +62,15 @@ namespace RabbitMQ.Application.Sagas
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ChargePayment,
                 // pass next step
-                Payload = JsonSerializer.Serialize(new ChargePayment(evt.SagaId, evt.OrderId, order.Amount, order.CustomerEmail)),
+                Payload = JsonSerializer.Serialize(new ChargePayment(evt.CorrelationId, evt.OrderId, order.Amount, order.CustomerEmail)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
         // failure
         public async Task OnStockReservationFailedAsync(StockReservationFailed evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
-                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+            var saga = await _context.OrderSagaState.FindAsync(evt.CorrelationId)
+                ?? throw new InvalidOperationException($"Saga {evt.CorrelationId} not found");
 
             // saga ends here, nothing to undo
             saga.CurrentState = SagaStep.Cancelled.ToString();
@@ -82,8 +82,8 @@ namespace RabbitMQ.Application.Sagas
         // release stock
         public async Task OnStockReleasedAsync(StockReleased evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
-                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+            var saga = await _context.OrderSagaState.FindAsync(evt.CorrelationId)
+                ?? throw new InvalidOperationException($"Saga {evt.CorrelationId} not found");
 
             // saga ends here, compensation confirmed
             saga.CurrentState = SagaStep.Cancelled.ToString(); 
@@ -95,8 +95,8 @@ namespace RabbitMQ.Application.Sagas
         // success
         public async Task OnPaymentChargedAsync(PaymentCharged evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
-                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+            var saga = await _context.OrderSagaState.FindAsync(evt.CorrelationId)
+                ?? throw new InvalidOperationException($"Saga {evt.CorrelationId} not found");
 
             // final state
             saga.CurrentState = SagaStep.Completed.ToString();
@@ -108,8 +108,8 @@ namespace RabbitMQ.Application.Sagas
         // payment failed, we call step before, releasing stock
         public async Task OnPaymentFailedAsync(PaymentFailed evt)
         {
-            var saga = await _context.OrderSagaState.FindAsync(evt.SagaId)
-                ?? throw new InvalidOperationException($"Saga {evt.SagaId} not found");
+            var saga = await _context.OrderSagaState.FindAsync(evt.CorrelationId)
+                ?? throw new InvalidOperationException($"Saga {evt.CorrelationId} not found");
 
             saga.CurrentState = SagaStep.Compensating.ToString();
             saga.UpdatedAt = DateTimeOffset.UtcNow;
@@ -118,7 +118,7 @@ namespace RabbitMQ.Application.Sagas
             {
                 Id = Guid.NewGuid(),
                 MessageType = MessageTypes.ReleaseStock,
-                Payload = JsonSerializer.Serialize(new ReleaseStock(evt.SagaId, evt.OrderId)),
+                Payload = JsonSerializer.Serialize(new ReleaseStock(evt.CorrelationId, evt.OrderId)),
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }

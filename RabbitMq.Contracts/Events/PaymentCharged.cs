@@ -1,5 +1,6 @@
 ﻿namespace RabbitMq.Contracts.Events
 {
-    public record PaymentCharged(Guid SagaId, Guid OrderId);
+    // uses CorrelationId for message state instance id matching
+    public record PaymentCharged(Guid CorrelationId, Guid OrderId);
 
 }

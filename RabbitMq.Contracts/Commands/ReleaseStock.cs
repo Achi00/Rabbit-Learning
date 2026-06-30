@@ -1,5 +1,5 @@
 ﻿namespace RabbitMq.Contracts.Commands
 {
     // compensation
-    public record ReleaseStock(Guid SagaId, Guid OrderId);
+    public record ReleaseStock(Guid CorrelationId, Guid OrderId);
 }

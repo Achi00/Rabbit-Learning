@@ -1,4 +1,4 @@
 ﻿namespace RabbitMq.Contracts.Commands
 {
-    public record ReserveStock(Guid SagaId, Guid OrderId);
+    public record ReserveStock(Guid CorrelationId, Guid OrderId);
 }
