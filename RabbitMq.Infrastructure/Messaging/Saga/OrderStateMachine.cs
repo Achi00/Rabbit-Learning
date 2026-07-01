@@ -75,6 +75,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     {
                         ctx.Saga.OrderId = ctx.Message.OrderId;
                         ctx.Saga.CreatedAt = DateTimeOffset.UtcNow;
+                        ctx.Saga.UpdatedAt = DateTimeOffset.UtcNow;
                         ctx.Saga.Amount = ctx.Message.Amount;
                         ctx.Saga.CustomerEmail = ctx.Message.CustomerEmail;
                     })
@@ -99,6 +100,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Then(ctx =>
                     {
                         ctx.Saga.FailureReason = ctx.Message.Reason;
+                        ctx.Saga.UpdatedAt = DateTimeOffset.UtcNow;
                     })
                     .Publish(ctx => new OrderCancelled(ctx.Saga.OrderId, ctx.Saga.CustomerEmail, ctx.Saga.FailureReason))
                     // finalize removes row???
@@ -115,6 +117,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Then(ctx =>
                     {
                         ctx.Saga.FailureReason = ctx.Message.Reason;
+                        ctx.Saga.UpdatedAt = DateTimeOffset.UtcNow;
                     })
                     .Publish(ctx => new ReleaseStock(ctx.Saga.CorrelationId, ctx.Saga.OrderId))
                     .TransitionTo(Compensating)
@@ -129,6 +132,7 @@ namespace RabbitMq.Infrastructure.Messaging.Saga
                     .Then(ctx =>
                     {
                         ctx.Saga.FailureReason = $"Stock release failed: {ctx.Message.Reason}";
+                        ctx.Saga.UpdatedAt = DateTimeOffset.UtcNow;
                     })
                     .Publish(ctx => new OrderRequiresManualReview(
                         ctx.Saga.OrderId,
