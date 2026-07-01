@@ -52,7 +52,7 @@ namespace RabbitMQ.Application.Services.Orders
             order.CompletedAt = DateTimeOffset.UtcNow;
             order.FailureReason = reason;
 
-            _orderRepository.UpdateOrder(order);
+            _orderRepository.UpdateOrderAsync(order, ct);
 
             await _orderRepository.SaveChangesAsync(ct);
 
@@ -77,7 +77,7 @@ namespace RabbitMQ.Application.Services.Orders
             order.CompletedAt = DateTimeOffset.UtcNow;
             order.FailureReason = null;
 
-            _orderRepository.UpdateOrder(order);
+            _orderRepository.UpdateOrderAsync(order, ct);
 
             await _orderRepository.SaveChangesAsync(ct);
         }

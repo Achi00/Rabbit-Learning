@@ -7,7 +7,7 @@ namespace RabbitMQ.Application.Interfaces.Repositories.Orders
         Task<List<Order>> GetAllAsync(CancellationToken ct = default);
         Task<Order?> GetByIdAsync(Guid orderId, CancellationToken ct = default);
         void CreateOrder(Order order, CancellationToken ct = default);
-        void UpdateOrder(Order order, CancellationToken ct = default);
+        void UpdateOrderAsync(Order order, CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
     }
 }

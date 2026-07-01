@@ -34,7 +34,7 @@ namespace RabbitMq.Infrastructure.Repositories
             await _context.SaveChangesAsync(ct);
         }
 
-        public async void UpdateOrder(Order order, CancellationToken ct = default)
+        public async void UpdateOrderAsync(Order order, CancellationToken ct = default)
         {
             var exists = await _context.Orders.FirstOrDefaultAsync(o => o.Id == order.Id, ct);
 
