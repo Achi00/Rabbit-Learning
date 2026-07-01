@@ -52,7 +52,7 @@ namespace RabbitMQ.Application.Services.Orders
             order.CompletedAt = DateTimeOffset.UtcNow;
             order.FailureReason = reason;
 
-            _orderRepository.UpdateOrderAsync(order, ct);
+            await _orderRepository.UpdateOrderAsync(order, ct);
 
             await _orderRepository.SaveChangesAsync(ct);
 
@@ -77,7 +77,7 @@ namespace RabbitMQ.Application.Services.Orders
             order.CompletedAt = DateTimeOffset.UtcNow;
             order.FailureReason = null;
 
-            _orderRepository.UpdateOrderAsync(order, ct);
+            await _orderRepository.UpdateOrderAsync(order, ct);
 
             await _orderRepository.SaveChangesAsync(ct);
         }
@@ -96,7 +96,7 @@ namespace RabbitMQ.Application.Services.Orders
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
-            _orderRepository.CreateOrder(order, ct);
+            _orderRepository.CreateOrder(order);
 
             // first publishe then save changes, because we use outbox pattern
             await _publishEndpoint.Publish(new OrderSubmitted(orderId, order.CustomerEmail, order.Amount), ct);
