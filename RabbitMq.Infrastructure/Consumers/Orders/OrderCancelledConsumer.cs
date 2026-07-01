@@ -19,9 +19,9 @@ namespace RabbitMq.Infrastructure.Consumers.Orders
         }
         public async Task Consume(ConsumeContext<OrderCancelled> context)
         {
-            var messageId = context.MessageId ?? Guid.NewGuid();
+            var messageId = context.MessageId;
 
-            // idempotency check
+            // idempotency check manually, try inbox patter if it fixes this????
             var alreadyProcessed = await _context.Messages.AnyAsync(m => m.MessageId == messageId);
 
             if (alreadyProcessed)
